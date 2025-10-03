@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Идеи - XBMC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Идеи пользователей</h2>
+    <a href="{{ url_for('main.add_idea') }}" class="btn btn-primary">Добавить идею</a>
+</div>
+
+{% if ideas_list %}
+    {% for idea in ideas_list %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ idea.title }}</h5>
+                <p class="card-text">{{ idea.description }}</p>
+                <div class="d-flex justify-content-between">
+                    <span class="badge bg-{{ 'success' if idea.status == 'implemented' else 'warning' if idea.status == 'reviewed' else 'secondary' }}">
+                        {{ idea.status }}
+                    </span>
+                    <span class="text-muted small">{{ idea.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">Идей пока нет</div>
+{% endif %}
+{% endblock %}

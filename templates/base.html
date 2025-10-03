@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}XBMC{% endblock %}</title>
+    <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">web site logo</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.news') }}">
+                            Новости <span class="badge bg-light text-dark">{{ news_count }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.ideas') }}">
+                            Есть идея <span class="badge bg-light text-dark">{{ ideas_count }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.invite') }}">Пригласи друга</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if current_user.is_authenticated %}
+                        <span class="text-white me-3">
+                            <i class="bi bi-wallet2"></i> {{ current_user.balance }} ₽
+                        </span>
+                        <button class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#balanceModal">
+                            Баланс
+                        </button>
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle" type="button" id="supportDropdown"
+                                    data-bs-toggle="dropdown">
+                                {% if current_user.is_admin() %}
+                                    Админ
+                                {% else %}
+                                    Поддержка
+                                {% endif %}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('main.support') }}">Поддержка (cdvks)</a></li>
+                                {% if current_user.is_admin() %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('main.admin_users') }}">Управление пользователями</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <span class="text-white ms-3">{{ current_user.username }}
+                            {% if current_user.is_admin() %}
+                                <span class="badge bg-danger ms-1">Admin</span>
+                            {% endif %}
+                        </span>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light ms-2">Выход</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-light me-2">Вход</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light">Регистрация</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Balance Modal -->
+    {% if current_user.is_authenticated %}
+    <div class="modal fade" id="balanceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Пополнение баланса</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('payment.create_payment') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Сумма пополнения (₽)</label>
+                            <input type="number" class="form-control" id="amount" name="amount"
+                                   min="1" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Пополнить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

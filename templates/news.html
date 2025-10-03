@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Новости - XBMC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Новости</h2>
+    {% if current_user.is_authenticated and current_user.is_admin() %}
+        <a href="{{ url_for('main.add_news') }}" class="btn btn-primary">Добавить новость</a>
+    {% endif %}
+</div>
+
+{% if news_list %}
+    {% for news_item in news_list %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ news_item.title }}</h5>
+                <p class="card-text">{{ news_item.content }}</p>
+                <p class="text-muted small">{{ news_item.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">Новостей пока нет</div>
+{% endif %}
+{% endblock %}
