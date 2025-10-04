@@ -2,6 +2,10 @@ from flask import Flask
 from flask_login import LoginManager
 from app.models import db, User
 import os
+from dotenv import load_dotenv
+
+# Загрузка переменных окружения
+load_dotenv()
 
 login_manager = LoginManager()
 
@@ -11,12 +15,14 @@ def create_app():
                 static_folder='../static')
 
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///xbmc.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице.'
+    login_manager.login_message_category = 'warning'
 
     @login_manager.user_loader
     def load_user(user_id):

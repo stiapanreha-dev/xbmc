@@ -30,14 +30,23 @@ class EmailService:
             html_part = MIMEText(html_content, 'html', 'utf-8')
             msg.attach(html_part)
 
-            # Подключаемся к SMTP серверу
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
-                # Для MailHog аутентификация не нужна
-                if self.smtp_user and self.smtp_password:
-                    server.login(self.smtp_user, self.smtp_password)
+            # Подключаемся к SMTP серверу с SSL/TLS
+            if self.smtp_port == 465:
+                # SSL (порт 465)
+                with smtplib.SMTP_SSL(self.smtp_host, self.smtp_port, timeout=30) as server:
+                    if self.smtp_user and self.smtp_password:
+                        server.login(self.smtp_user, self.smtp_password)
+                    server.send_message(msg)
+            else:
+                # STARTTLS (порт 587) или без шифрования (порт 25/1025)
+                with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=30) as server:
+                    if self.smtp_port == 587:
+                        server.starttls()
+                    if self.smtp_user and self.smtp_password:
+                        server.login(self.smtp_user, self.smtp_password)
+                    server.send_message(msg)
 
-                server.send_message(msg)
-                return True
+            return True
 
         except Exception as e:
             print(f"Ошибка отправки email: {e}")
