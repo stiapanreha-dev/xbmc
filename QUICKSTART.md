@@ -22,7 +22,7 @@ cd xbmc
 pip install -r requirements.txt
 ```
 
-*Если pip не найден, используйте:* `python -m pip install -r requirements.txt`
+*Если pip не найден, используйте:* `py -m pip install -r requirements.txt`
 
 ## 3. Настройка переменных окружения
 
@@ -74,7 +74,7 @@ YUKASSA_RETURN_URL=http://localhost:5000/payment/success
 ## 4. Инициализация базы данных
 
 ```cmd
-python scripts\init_db.py
+py scripts\init_db.py
 ```
 
 Будет создан админ пользователь:
@@ -84,7 +84,7 @@ python scripts\init_db.py
 ## 5. Запуск приложения
 
 ```cmd
-python run.py
+py run.py
 ```
 
 Приложение доступно по адресу: **http://localhost:5000**
@@ -107,19 +107,19 @@ except Exception as e:
 
 Запустите:
 ```cmd
-python test_connection.py
+py test_connection.py
 ```
 
 ## 7. Тестирование сервисов (опционально)
 
 ### Email сервис:
 ```cmd
-python tests\test_email_service.py
+py tests\test_email_service.py
 ```
 
 ### SMS сервис:
 ```cmd
-python tests\test_sms_service.py
+py tests\test_sms_service.py
 ```
 
 ## 8. Публичный доступ через ngrok (опционально)
@@ -223,11 +223,13 @@ cd xbmc
 pip install -r requirements.txt
 copy .env.example .env
 REM Отредактируйте .env с вашими настройками SQL
-python scripts\init_db.py
-python run.py
+py scripts\init_db.py
+py run.py
 ```
 
 Откройте http://localhost:5000 и войдите как **admin/admin123**
+
+> **Примечание:** В Windows используйте команду `py` вместо `python`
 
 ---
 
