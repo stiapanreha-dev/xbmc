@@ -33,3 +33,9 @@ instance/
 # OS
 .DS_Store
 Thumbs.db
+
+# Documentation
+CLAUDE.md
+
+# Scripts
+.scripts/

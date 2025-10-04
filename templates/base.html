@@ -52,14 +52,16 @@
                                 {% if current_user.is_admin() %}
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ url_for('main.admin_users') }}">Управление пользователями</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('main.admin_ideas') }}">Модерация идей</a></li>
                                 {% endif %}
                             </ul>
                         </div>
-                        <span class="text-white ms-3">{{ current_user.username }}
+                        <a href="{{ url_for('auth.profile') }}" class="text-white text-decoration-none ms-3">
+                            {{ current_user.username }}
                             {% if current_user.is_admin() %}
                                 <span class="badge bg-danger ms-1">Admin</span>
                             {% endif %}
-                        </span>
+                        </a>
                         <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light ms-2">Выход</a>
                     {% else %}
                         <a href="{{ url_for('auth.login') }}" class="btn btn-light me-2">Вход</a>
@@ -111,5 +113,25 @@
 
     <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+    // Исправление проблемы с backdrop модалки
+    document.addEventListener('DOMContentLoaded', function() {
+        const balanceModal = document.getElementById('balanceModal');
+        if (balanceModal) {
+            balanceModal.addEventListener('hidden.bs.modal', function () {
+                // Удаляем backdrop если он остался
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                // Убираем класс modal-open с body
+                document.body.classList.remove('modal-open');
+                // Восстанавливаем скролл
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            });
+        }
+    });
+    </script>
 </body>
 </html>

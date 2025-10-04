@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Спецификация закупки #{{ zakupki_id }} - XBMC{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Спецификация закупки #{{ zakupki_id }}</h2>
+
+<div class="mb-3">
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>№</th>
+                <th>Наименование товара</th>
+                <th>Спецификация товара</th>
+                <th>Количество</th>
+                <th>Цена с НДС</th>
+                <th>Условия оплаты</th>
+                <th>Срок поставки</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for spec in specifications %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ spec.product or '-' }}</td>
+                <td>{{ spec.product_specification or '-' }}</td>
+                <td>{{ spec.quantity or '-' }}</td>
+                <td><strong>{{ format_price(spec.price_vat) }}</strong></td>
+                <td>{{ spec.terms_of_payment or '-' }}</td>
+                <td>{{ spec.delivery_time or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="table-info">
+                <td colspan="4" class="text-end"><strong>Общая стоимость:</strong></td>
+                <td colspan="3">
+                    <strong>-</strong>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<div class="alert alert-info mt-3">
+    <strong>Всего позиций:</strong> {{ specifications|length }}
+</div>
+{% endblock %}

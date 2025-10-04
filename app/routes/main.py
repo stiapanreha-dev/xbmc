@@ -10,14 +10,61 @@ from openpyxl import Workbook
 bp = Blueprint('main', __name__)
 
 @bp.route('/')
-@login_required
 def index():
     # Получаем параметры фильтрации
     date_from = request.args.get('date_from')
     date_to = request.args.get('date_to')
     search_text = request.args.get('search_text', '').strip()
     page = int(request.args.get('page', 1))
-    per_page = 100
+
+    # Получаем параметр per_page с валидацией
+    per_page_param = request.args.get('per_page', '20')
+    try:
+        per_page = int(per_page_param)
+        if per_page not in [20, 50, 100, 500]:
+            per_page = 20
+    except ValueError:
+        per_page = 20
+
+    # Определяем лимит и доступ на основе авторизации и баланса
+    restrict_to_ids = None  # Для ограничения доступа неавторизированных пользователей
+
+    if not current_user.is_authenticated:
+        # Без авторизации: только top 50 с пагинацией, email замаскирован
+        max_records = 50
+        offset = (page - 1) * per_page
+        # Ограничиваем offset в пределах первых 50 записей
+        if offset >= max_records:
+            offset = 0
+            page = 1
+        limit = min(per_page, max_records - offset)
+        has_full_access = False
+        show_masked_email = True
+
+        # Получаем ID первых 50 записей для ограничения доступа
+        conn = mssql.get_connection()
+        cursor = conn.cursor(as_dict=True)
+        cursor.execute("""
+            SELECT TOP 50 id
+            FROM zakupki
+            ORDER BY id DESC
+        """)
+        top_50_records = cursor.fetchall()
+        conn.close()
+        restrict_to_ids = [r['id'] for r in top_50_records]
+
+    elif current_user.has_positive_balance() or current_user.is_admin():
+        # С положительным балансом или админ: полный доступ, email открыт
+        limit = per_page
+        offset = (page - 1) * per_page
+        has_full_access = True
+        show_masked_email = False
+    else:
+        # С нулевым балансом: полный доступ с пагинацией, но email замаскирован
+        limit = per_page
+        offset = (page - 1) * per_page
+        has_full_access = True
+        show_masked_email = True
 
     # Конвертируем даты
     date_from_obj = datetime.strptime(date_from, '%Y-%m-%d') if date_from else None
@@ -28,16 +75,24 @@ def index():
         date_from=date_from_obj,
         date_to=date_to_obj,
         search_text=search_text if search_text else None,
-        limit=per_page,
-        offset=(page - 1) * per_page
+        limit=limit,
+        offset=offset,
+        restrict_to_ids=restrict_to_ids,
+        count_all=not current_user.is_authenticated  # Для неавторизованных считаем общее количество
     )
+
+    total = result['total']
 
     return render_template('index.html',
                          zakupki=result['data'],
-                         total=result['total'],
+                         total=total,
                          date_from=date_from or '',
                          date_to=date_to or '',
-                         search_text=search_text)
+                         search_text=search_text,
+                         has_full_access=has_full_access,
+                         show_masked_email=show_masked_email,
+                         page=page,
+                         per_page=per_page)
 
 @bp.route('/news')
 def news():
@@ -70,7 +125,7 @@ def add_news():
 
 @bp.route('/ideas')
 def ideas():
-    ideas_list = Idea.query.order_by(Idea.created_at.desc()).all()
+    ideas_list = Idea.query.filter_by(status='approved').order_by(Idea.created_at.desc()).all()
     return render_template('ideas.html', ideas_list=ideas_list)
 
 @bp.route('/ideas/add', methods=['GET', 'POST'])
@@ -86,12 +141,13 @@ def add_idea():
         idea = Idea(
             title=title,
             description=description,
-            user_id=current_user.id if current_user.is_authenticated else None
+            user_id=current_user.id if current_user.is_authenticated else None,
+            status='pending'
         )
         db.session.add(idea)
         db.session.commit()
 
-        flash('Идея успешно добавлена!', 'success')
+        flash('Идея отправлена на модерацию! После проверки администратором она появится на сайте.', 'success')
         return redirect(url_for('main.ideas'))
 
     return render_template('add_idea.html')
@@ -129,6 +185,77 @@ def toggle_admin(user_id):
 
     db.session.commit()
     return redirect(url_for('main.admin_users'))
+
+@bp.route('/admin/ideas')
+@admin_required
+def admin_ideas():
+    # Получаем фильтр по статусу
+    status_filter = request.args.get('status', 'pending')
+
+    # Фильтруем идеи
+    if status_filter == 'all':
+        ideas_list = Idea.query.order_by(Idea.created_at.desc()).all()
+    else:
+        ideas_list = Idea.query.filter_by(status=status_filter).order_by(Idea.created_at.desc()).all()
+
+    return render_template('admin_ideas.html', ideas_list=ideas_list, status_filter=status_filter)
+
+@bp.route('/admin/ideas/<int:idea_id>/approve', methods=['POST'])
+@admin_required
+def approve_idea(idea_id):
+    idea = Idea.query.get_or_404(idea_id)
+    idea.status = 'approved'
+    db.session.commit()
+    flash(f'Идея "{idea.title}" одобрена', 'success')
+    return redirect(url_for('main.admin_ideas'))
+
+@bp.route('/admin/ideas/<int:idea_id>/reject', methods=['POST'])
+@admin_required
+def reject_idea(idea_id):
+    idea = Idea.query.get_or_404(idea_id)
+    idea.status = 'rejected'
+    db.session.commit()
+    flash(f'Идея "{idea.title}" отклонена', 'warning')
+    return redirect(url_for('main.admin_ideas'))
+
+@bp.route('/admin/ideas/<int:idea_id>/delete', methods=['POST'])
+@admin_required
+def delete_idea(idea_id):
+    idea = Idea.query.get_or_404(idea_id)
+    title = idea.title
+    db.session.delete(idea)
+    db.session.commit()
+    flash(f'Идея "{title}" удалена', 'success')
+
+    # Редирект на страницу, откуда была нажата кнопка удаления
+    referer = request.referrer
+    if referer and '/ideas' in referer and '/admin/ideas' not in referer:
+        return redirect(url_for('main.ideas'))
+    return redirect(url_for('main.admin_ideas'))
+
+@bp.route('/admin/news/<int:news_id>/delete', methods=['POST'])
+@admin_required
+def delete_news(news_id):
+    news_item = News.query.get_or_404(news_id)
+    title = news_item.title
+    db.session.delete(news_item)
+    db.session.commit()
+    flash(f'Новость "{title}" удалена', 'success')
+    return redirect(url_for('main.news'))
+
+@bp.route('/zakupki/<int:zakupki_id>/specifications')
+@login_required
+def specifications(zakupki_id):
+    """Показать спецификации для закупки"""
+    specifications = mssql.get_specifications(zakupki_id)
+
+    if not specifications:
+        flash('Спецификации для данной закупки не найдены', 'info')
+        return redirect(url_for('main.index'))
+
+    return render_template('specifications.html',
+                         specifications=specifications,
+                         zakupki_id=zakupki_id)
 
 @bp.route('/export')
 @login_required

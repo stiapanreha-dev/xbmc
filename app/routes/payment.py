@@ -19,7 +19,7 @@ def create_payment():
 
     if not amount or float(amount) <= 0:
         flash('Укажите корректную сумму', 'danger')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('payment.create_payment'))
 
     # Создаем транзакцию
     transaction = Transaction(

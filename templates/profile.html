@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль - XBMC{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="mb-4">Профиль пользователя</h2>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Личная информация</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Имя пользователя:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ user.username }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Email:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ user.email }}
+                        {% if user.email_verified %}
+                            <span class="badge bg-success ms-2">Подтвержден</span>
+                        {% else %}
+                            <span class="badge bg-warning ms-2">Не подтвержден</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Телефон:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ user.phone or '-' }}
+                        {% if user.phone %}
+                            {% if user.phone_verified %}
+                                <span class="badge bg-success ms-2">Подтвержден</span>
+                            {% else %}
+                                <span class="badge bg-warning ms-2">Не подтвержден</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Роль:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {% if user.is_admin() %}
+                            <span class="badge bg-danger">Администратор</span>
+                        {% else %}
+                            <span class="badge bg-primary">Пользователь</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Дата регистрации:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ user.created_at.strftime('%d.%m.%Y %H:%M') if user.created_at else '-' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Баланс</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Текущий баланс:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        <h4 class="mb-0">
+                            {{ "{:,.2f}".format(user.balance|float) }} ₽
+                        </h4>
+                    </div>
+                </div>
+
+                {% if not user.has_positive_balance() %}
+                <div class="alert alert-info">
+                    <strong>Обратите внимание:</strong> Для полного доступа к данным необходимо пополнить баланс.
+                    <div class="mt-2">
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#balanceModal">
+                            Пополнить баланс
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Статус верификации</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            {% if user.email_verified %}
+                                <svg width="24" height="24" fill="green" class="me-2" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                </svg>
+                                <span>Email подтвержден</span>
+                            {% else %}
+                                <svg width="24" height="24" fill="orange" class="me-2" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                    <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                </svg>
+                                <span>Email не подтвержден</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            {% if user.phone_verified %}
+                                <svg width="24" height="24" fill="green" class="me-2" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                </svg>
+                                <span>Телефон подтвержден</span>
+                            {% else %}
+                                <svg width="24" height="24" fill="orange" class="me-2" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                    <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                </svg>
+                                <span>Телефон не подтвержден</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Назад к списку закупок</a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Принудительно открываем модалку при клике на кнопки пополнения баланса
+document.addEventListener('DOMContentLoaded', function() {
+    const balanceButtons = document.querySelectorAll('[data-bs-target="#balanceModal"]');
+    balanceButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modal = new bootstrap.Modal(document.getElementById('balanceModal'));
+            modal.show();
+        });
+    });
+});
+</script>
+{% endblock %}
