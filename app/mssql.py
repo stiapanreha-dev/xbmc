@@ -9,6 +9,7 @@ class MSSQLConnection:
         self.password = os.getenv('MSSQL_PASSWORD', '123123123')
         self.database = os.getenv('MSSQL_DATABASE', 'buss')
         self.port = int(os.getenv('MSSQL_PORT', '1433'))
+        self.charset = os.getenv('MSSQL_CHARSET', 'cp1251')
 
     def get_connection(self):
         try:
@@ -18,7 +19,7 @@ class MSSQLConnection:
                 password=self.password,
                 database=self.database,
                 port=self.port,
-                charset='cp1251'
+                charset=self.charset
             )
         except Exception as e:
             print(f"MSSQL Connection Error: {e}")
