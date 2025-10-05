@@ -1,5 +1,6 @@
 import pymssql
 import os
+import time
 from datetime import datetime
 
 class MSSQLConnection:
@@ -11,9 +12,18 @@ class MSSQLConnection:
         self.port = int(os.getenv('MSSQL_PORT', '1433'))
         self.charset = os.getenv('MSSQL_CHARSET', 'cp1251')
 
+        # Профилирование запросов (для админов)
+        self.query_stats = {
+            'total_queries': 0,
+            'total_time': 0,
+            'last_query_time': 0,
+            'connection_time': 0
+        }
+
     def get_connection(self):
         try:
-            return pymssql.connect(
+            start_time = time.time()
+            conn = pymssql.connect(
                 server=self.server,
                 user=self.user,
                 password=self.password,
@@ -21,6 +31,8 @@ class MSSQLConnection:
                 port=self.port,
                 charset=self.charset
             )
+            self.query_stats['connection_time'] = (time.time() - start_time) * 1000  # в миллисекундах
+            return conn
         except Exception as e:
             print(f"MSSQL Connection Error: {e}")
             return None
@@ -32,6 +44,8 @@ class MSSQLConnection:
             restrict_to_ids: Список ID для ограничения выборки (для неавторизированных пользователей)
             count_all: Если True, считать total без учета restrict_to_ids (для отображения реального кол-ва)
         """
+        query_start_time = time.time()
+
         conn = self.get_connection()
         if conn is None:
             return {'data': [], 'total': 0}
@@ -122,6 +136,12 @@ class MSSQLConnection:
         results = cursor.fetchall()
 
         conn.close()
+
+        # Обновляем статистику профилирования
+        query_time = (time.time() - query_start_time) * 1000  # в миллисекундах
+        self.query_stats['total_queries'] += 1
+        self.query_stats['total_time'] += query_time
+        self.query_stats['last_query_time'] = query_time
 
         return {
             'data': results,

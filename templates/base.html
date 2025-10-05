@@ -99,6 +99,21 @@
             {% endif %}
         {% endwith %}
 
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+        <!-- MSSQL Профилирование (только для админов) -->
+        <div class="alert alert-dark alert-dismissible fade show" role="alert">
+            <strong><i class="bi bi-speedometer2"></i> MSSQL Профилирование:</strong>
+            <span class="badge bg-secondary">Подключение: {{ "%.0f"|format(mssql_stats.connection_time) }} мс</span>
+            <span class="badge bg-secondary">Последний запрос: {{ "%.0f"|format(mssql_stats.last_query_time) }} мс</span>
+            <span class="badge bg-secondary">Всего запросов: {{ mssql_stats.total_queries }}</span>
+            <span class="badge bg-secondary">Общее время: {{ "%.0f"|format(mssql_stats.total_time) }} мс</span>
+            {% if mssql_stats.total_queries > 0 %}
+            <span class="badge bg-info">Средний запрос: {{ "%.0f"|format(mssql_stats.total_time / mssql_stats.total_queries) }} мс</span>
+            {% endif %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
         {% block content %}{% endblock %}
     </div>
 

@@ -37,12 +37,14 @@ def create_app():
     def inject_counters():
         from app.models import News, Idea
         from app.utils import mask_email, mask_phone, format_price
+        from app.mssql import mssql
         return {
             'news_count': News.query.filter_by(is_published=True).count(),
             'ideas_count': Idea.query.filter_by(status='approved').count(),
             'mask_email': mask_email,
             'mask_phone': mask_phone,
-            'format_price': format_price
+            'format_price': format_price,
+            'mssql_stats': mssql.query_stats
         }
 
     from app.routes import main, auth, payment
