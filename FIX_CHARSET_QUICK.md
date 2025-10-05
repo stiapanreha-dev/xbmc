@@ -27,7 +27,7 @@ winget install --id Git.Git -e
 ### 2. Перезапустите Flask сервис
 
 ```powershell
-nssm restart FlaskBusinessDB
+C:\nssm\win64\nssm.exe restart FlaskBusinessDB
 ```
 
 ### 3. Проверьте результат
@@ -51,7 +51,7 @@ MSSQL_CHARSET=UTF-8
 
 После изменения `.env` не забудьте перезапустить сервис:
 ```powershell
-nssm restart FlaskBusinessDB
+C:\nssm\win64\nssm.exe restart FlaskBusinessDB
 ```
 
 ## Проверка кодировки базы данных
