@@ -12,11 +12,11 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
-        phone = request.form.get('phone')
+        phone = request.form.get('phone', '').strip()  # Телефон опционален
         password = request.form.get('password')
 
-        if not username or not email or not phone or not password:
-            flash('Заполните все поля', 'danger')
+        if not username or not email or not password:
+            flash('Заполните обязательные поля (имя, email, пароль)', 'danger')
             return redirect(url_for('auth.register'))
 
         # Проверка длины пароля
@@ -81,13 +81,6 @@ def login():
                 session['pending_user_id'] = user.id
                 return redirect(url_for('auth.verify_email'))
 
-            # Проверяем верификацию телефона
-            if not user.phone_verified:
-                flash('Пожалуйста, подтвердите ваш телефон перед входом.', 'warning')
-                # Сохраняем user_id в сессии для верификации телефона
-                session['pending_user_id'] = user.id
-                return redirect(url_for('auth.verify_phone'))
-
             login_user(user)
             flash('Вход выполнен успешно!', 'success')
             return redirect(url_for('main.index'))
@@ -130,12 +123,15 @@ def verify_email():
         if verification.is_valid(code):
             # Код правильный!
             user.email_verified = True
+            user.phone_verified = True  # Автоматически подтверждаем телефон
             verification.is_used = True
             db.session.commit()
 
-            flash('Email успешно подтвержден! Теперь подтвердите телефон.', 'success')
-            # Переходим к верификации телефона
-            return redirect(url_for('auth.verify_phone'))
+            # Очищаем сессию и логиним пользователя
+            session.pop('pending_user_id', None)
+            login_user(user)
+            flash('Email успешно подтвержден! Добро пожаловать!', 'success')
+            return redirect(url_for('main.index'))
         else:
             if verification.is_expired():
                 flash('Код истек. Запросите новый код.', 'warning')
