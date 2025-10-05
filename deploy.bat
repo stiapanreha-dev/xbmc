@@ -1,5 +1,14 @@
 @echo off
 chcp 65001 >nul
+
+REM Проверка прав администратора
+net session >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Требуются права администратора. Перезапуск...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
 echo ========================================
 echo   Business Database - Деплой обновлений
 echo ========================================
