@@ -4,6 +4,12 @@
 
 {% block content %}
 
+{% if total == 0 and not zakupki %}
+<div class="alert alert-danger">
+    <strong>Ошибка подключения:</strong> База данных закупок временно недоступна. Пожалуйста, попробуйте позже или обратитесь к администратору.
+</div>
+{% endif %}
+
 {% if not current_user.is_authenticated %}
 <div class="alert alert-warning">
     <strong>Ограниченный доступ:</strong> Отображаются только последние 50 записей.

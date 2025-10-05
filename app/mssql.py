@@ -11,13 +11,17 @@ class MSSQLConnection:
         self.port = int(os.getenv('MSSQL_PORT', '1433'))
 
     def get_connection(self):
-        return pymssql.connect(
-            server=self.server,
-            user=self.user,
-            password=self.password,
-            database=self.database,
-            port=self.port
-        )
+        try:
+            return pymssql.connect(
+                server=self.server,
+                user=self.user,
+                password=self.password,
+                database=self.database,
+                port=self.port
+            )
+        except Exception as e:
+            print(f"MSSQL Connection Error: {e}")
+            return None
 
     def get_zakupki(self, date_from=None, date_to=None, search_text=None, limit=100, offset=0, restrict_to_ids=None, count_all=False):
         """Получить закупки с фильтрацией
@@ -27,6 +31,9 @@ class MSSQLConnection:
             count_all: Если True, считать total без учета restrict_to_ids (для отображения реального кол-ва)
         """
         conn = self.get_connection()
+        if conn is None:
+            return {'data': [], 'total': 0}
+
         cursor = conn.cursor(as_dict=True)
 
         where_clauses = []
@@ -121,6 +128,9 @@ class MSSQLConnection:
     def get_specifications(self, zakupki_id):
         """Получить спецификации для закупки"""
         conn = self.get_connection()
+        if conn is None:
+            return []
+
         cursor = conn.cursor(as_dict=True)
 
         query = """
