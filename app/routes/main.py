@@ -30,7 +30,7 @@ def index():
     restrict_to_ids = None  # Для ограничения доступа неавторизированных пользователей
 
     if not current_user.is_authenticated:
-        # Без авторизации: только top 50 с пагинацией, email замаскирован
+        # Без авторизации: только top 50 с пагинацией, email и телефон замаскированы
         max_records = 50
         offset = (page - 1) * per_page
         # Ограничиваем offset в пределах первых 50 записей
@@ -40,6 +40,7 @@ def index():
         limit = min(per_page, max_records - offset)
         has_full_access = False
         show_masked_email = True
+        show_masked_phone = True
 
         # Получаем ID первых 50 записей для ограничения доступа
         conn = mssql.get_connection()
@@ -54,17 +55,19 @@ def index():
         restrict_to_ids = [r['id'] for r in top_50_records]
 
     elif current_user.has_positive_balance() or current_user.is_admin():
-        # С положительным балансом или админ: полный доступ, email открыт
+        # С положительным балансом или админ: полный доступ, email и телефон открыты
         limit = per_page
         offset = (page - 1) * per_page
         has_full_access = True
         show_masked_email = False
+        show_masked_phone = False
     else:
-        # С нулевым балансом: полный доступ с пагинацией, но email замаскирован
+        # С нулевым балансом: полный доступ с пагинацией, но email и телефон замаскированы
         limit = per_page
         offset = (page - 1) * per_page
         has_full_access = True
         show_masked_email = True
+        show_masked_phone = True
 
     # Конвертируем даты
     date_from_obj = datetime.strptime(date_from, '%Y-%m-%d') if date_from else None
@@ -91,6 +94,7 @@ def index():
                          search_text=search_text,
                          has_full_access=has_full_access,
                          show_masked_email=show_masked_email,
+                         show_masked_phone=show_masked_phone,
                          page=page,
                          per_page=per_page)
 
@@ -159,6 +163,18 @@ def invite():
 @bp.route('/support')
 def support():
     return render_template('support.html')
+
+@bp.route('/privacy-policy')
+def privacy_policy():
+    return render_template('privacy_policy.html')
+
+@bp.route('/terms-of-service')
+def terms_of_service():
+    return render_template('terms_of_service.html')
+
+@bp.route('/offer')
+def offer():
+    return render_template('offer.html')
 
 @bp.route('/admin/users')
 @admin_required
@@ -243,19 +259,41 @@ def delete_news(news_id):
     flash(f'Новость "{title}" удалена', 'success')
     return redirect(url_for('main.news'))
 
+@bp.route('/zakupki/<int:zakupki_id>')
+@login_required
+def zakupki_detail(zakupki_id):
+    """Показать детальную информацию о закупке"""
+    # Получить данные закупки
+    result = mssql.get_zakupki(limit=1, offset=0, restrict_to_ids=[zakupki_id])
+
+    if not result['data']:
+        flash('Закупка не найдена', 'error')
+        return redirect(url_for('main.index'))
+
+    zakupka = result['data'][0]
+
+    # Получить спецификации (если есть)
+    specifications = mssql.get_specifications(zakupki_id)
+
+    # Определить нужно ли маскировать данные (пользователь уже авторизован благодаря @login_required)
+    show_masked_email = False
+    show_masked_phone = False
+
+    if not (current_user.has_positive_balance() or current_user.is_admin()):
+        show_masked_email = True
+        show_masked_phone = True
+
+    return render_template('zakupki_detail.html',
+                         zakupka=zakupka,
+                         specifications=specifications,
+                         show_masked_email=show_masked_email,
+                         show_masked_phone=show_masked_phone)
+
 @bp.route('/zakupki/<int:zakupki_id>/specifications')
 @login_required
 def specifications(zakupki_id):
-    """Показать спецификации для закупки"""
-    specifications = mssql.get_specifications(zakupki_id)
-
-    if not specifications:
-        flash('Спецификации для данной закупки не найдены', 'info')
-        return redirect(url_for('main.index'))
-
-    return render_template('specifications.html',
-                         specifications=specifications,
-                         zakupki_id=zakupki_id)
+    """Показать спецификации для закупки (старый роут, редирект на новый)"""
+    return redirect(url_for('main.zakupki_detail', zakupki_id=zakupki_id))
 
 @bp.route('/export')
 @login_required

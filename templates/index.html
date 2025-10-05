@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Закупки - XBMC{% endblock %}
+{% block title %}Закупки - Business database{% endblock %}
 
 {% block content %}
 
@@ -9,9 +9,9 @@
     <strong>Ограниченный доступ:</strong> Отображаются только последние 50 записей.
     <a href="{{ url_for('auth.login') }}" class="alert-link">Войдите</a> для полного доступа.
 </div>
-{% elif show_masked_email %}
+{% elif show_masked_email or show_masked_phone %}
 <div class="alert alert-info">
-    <strong>Обратите внимание:</strong> Email адреса частично скрыты.
+    <strong>Обратите внимание:</strong> Email адреса и телефоны частично скрыты.
     <a href="#" class="alert-link" data-bs-toggle="modal" data-bs-target="#balanceModal">Пополните баланс</a> для полного доступа.
 </div>
 {% endif %}
@@ -73,16 +73,15 @@
                         <th>Email</th>
                         <th>Телефон</th>
                         <th>Адрес</th>
-                        <th>Спецификация</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% if zakupki %}
                         {% for item in zakupki %}
-                        <tr>
+                        <tr onclick="window.location='{{ url_for('main.zakupki_detail', zakupki_id=item.id) }}'">
                             <td>{{ item.date_request.strftime('%d.%m.%Y') if item.date_request else '' }}</td>
                             <td>{{ item.purchase_object }}</td>
-                            <td>{{ '{:,.0f}'.format(item.start_cost).replace(',', ' ') if item.start_cost else '' }}</td>
+                            <td>{{ format_price(item.start_cost) if item.start_cost else '' }}</td>
                             <td>{{ item.customer }}</td>
                             <td>
                                 {% if show_masked_email and item.email %}
@@ -91,23 +90,19 @@
                                     {{ item.email }}
                                 {% endif %}
                             </td>
-                            <td>{{ item.phone }}</td>
-                            <td>{{ item.address }}</td>
                             <td>
-                                {% if item.purchase_type is none %}
-                                    <a href="{{ url_for('main.specifications', zakupki_id=item.id) }}"
-                                       class="btn btn-sm btn-info" title="Посмотреть спецификацию">
-                                        📋
-                                    </a>
+                                {% if show_masked_phone and item.phone %}
+                                    {{ mask_phone(item.phone) }}
                                 {% else %}
-                                    <span class="text-muted">-</span>
+                                    {{ item.phone }}
                                 {% endif %}
                             </td>
+                            <td>{{ item.address }}</td>
                         </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="8" class="text-center">Нет данных</td>
+                            <td colspan="7" class="text-center">Нет данных</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -148,24 +143,37 @@
                         </li>
                         {% endif %}
 
-                        {# Номера страниц #}
-                        {% for p in range(1, total_pages + 1) %}
-                            {% if p == page %}
+                        {# Номера страниц (оптимизировано для больших наборов данных) #}
+                        {% if total_pages > 1000 %}
+                            {# Упрощенная пагинация для больших объемов #}
                             <li class="page-item active">
-                                <span class="page-link">{{ p }}</span>
+                                <span class="page-link">Страница {{ page }} из {{ '{:,}'.format(total_pages).replace(',', ' ') }}</span>
                             </li>
-                            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('main.index', page=p, date_from=date_from, date_to=date_to, search_text=search_text, per_page=per_page) }}">
-                                    {{ p }}
-                                </a>
+                                <input type="number" class="form-control form-control-sm" style="width: 100px; display: inline-block;"
+                                       placeholder="№ стр" min="1" max="{{ total_pages }}"
+                                       onkeypress="if(event.key==='Enter'){window.location.href='{{ url_for('main.index', page=1, date_from=date_from, date_to=date_to, search_text=search_text, per_page=per_page) }}'.replace('page=1', 'page='+this.value)}">
                             </li>
-                            {% elif p == page - 3 or p == page + 3 %}
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                            {% endif %}
-                        {% endfor %}
+                        {% else %}
+                            {# Обычная пагинация для небольших наборов #}
+                            {% for p in range(1, total_pages + 1) %}
+                                {% if p == page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ p }}</span>
+                                </li>
+                                {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.index', page=p, date_from=date_from, date_to=date_to, search_text=search_text, per_page=per_page) }}">
+                                        {{ p }}
+                                    </a>
+                                </li>
+                                {% elif p == page - 3 or p == page + 3 %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
 
                         {# Следующая страница #}
                         {% if page < total_pages %}

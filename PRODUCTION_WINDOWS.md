@@ -113,7 +113,7 @@ FLASK_ENV=production
 1. Открыть **Диспетчер служб IIS** (Win+R → `inetmgr`)
 2. ПКМ на **Сайты** → **Добавить веб-сайт**
 3. Заполнить:
-   - **Имя сайта**: XBMC
+   - **Имя сайта**: Business database
    - **Физический путь**: `C:\путь\к\xbmc`
    - **Тип**: HTTP
    - **IP-адрес**: Все неназначенные
@@ -140,14 +140,14 @@ FLASK_ENV=production
 
 1. В **Диспетчере IIS** → **Сертификаты сервера**
 2. ПКМ → **Создать самозаверяющий сертификат**
-3. Имя: XBMC-SSL
+3. Имя: Business database-SSL
 4. Хранилище: Личное
 
 5. Вернуться к сайту → ПКМ → **Изменить привязки**
 6. **Добавить**:
    - Тип: HTTPS
    - Порт: 443
-   - SSL-сертификат: XBMC-SSL
+   - SSL-сертификат: Business database-SSL
 
 ### Шаг 6: Настройка FastCGI
 
@@ -221,12 +221,12 @@ if __name__ == '__main__':
 
 ```cmd
 cd C:\nssm
-nssm install XBMC "C:\путь\к\xbmc\venv\Scripts\python.exe" "C:\путь\к\xbmc\run_production.py"
-nssm set XBMC AppDirectory "C:\путь\к\xbmc"
-nssm set XBMC DisplayName "XBMC Flask Application"
-nssm set XBMC Description "Flask приложение для закупок"
-nssm set XBMC Start SERVICE_AUTO_START
-nssm start XBMC
+nssm install Business database "C:\путь\к\xbmc\venv\Scripts\python.exe" "C:\путь\к\xbmc\run_production.py"
+nssm set Business database AppDirectory "C:\путь\к\xbmc"
+nssm set Business database DisplayName "Business database Flask Application"
+nssm set Business database Description "Flask приложение для закупок"
+nssm set Business database Start SERVICE_AUTO_START
+nssm start Business database
 ```
 
 ### Настройка Nginx для SSL (Reverse Proxy)
@@ -377,7 +377,7 @@ if not app.debug:
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
-    app.logger.info('XBMC startup')
+    app.logger.info('Business database startup')
 ```
 
 ---

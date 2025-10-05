@@ -3,14 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}XBMC{% endblock %}</title>
+    <title>{% block title %}Business database{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.png') }}">
+
     <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">web site logo</a>
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Business database" height="50">
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -93,6 +101,22 @@
 
         {% block content %}{% endblock %}
     </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-5 py-4 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p class="mb-2">
+                        <a href="{{ url_for('main.privacy_policy') }}" class="text-decoration-none me-3">Политика конфиденциальности</a>
+                        <a href="{{ url_for('main.terms_of_service') }}" class="text-decoration-none me-3">Пользовательское соглашение</a>
+                        <a href="{{ url_for('main.offer') }}" class="text-decoration-none">Публичная оферта</a>
+                    </p>
+                    <p class="text-muted mb-0">&copy; 2024 Business database. Все права защищены.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Balance Modal -->
     {% if current_user.is_authenticated %}

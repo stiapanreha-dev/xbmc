@@ -85,7 +85,7 @@ class SMSService:
         Returns:
             bool: True если отправка успешна
         """
-        text = f"Ваш код подтверждения XBMC: {code}\n\nКод действителен 10 минут."
+        text = f"Ваш код подтверждения Business database: {code}\n\nКод действителен 10 минут."
         return self.send_sms(phone, text)
 
 

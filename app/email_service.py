@@ -16,7 +16,7 @@ class EmailService:
         self.smtp_user = os.getenv('SMTP_USER', '')
         self.smtp_password = os.getenv('SMTP_PASSWORD', '')
         self.from_email = os.getenv('FROM_EMAIL', 'noreply@xbmc.local')
-        self.from_name = os.getenv('FROM_NAME', 'XBMC')
+        self.from_name = os.getenv('FROM_NAME', 'Business database')
 
     def send_email(self, to_email, subject, html_content):
         """Отправка email"""
@@ -54,7 +54,7 @@ class EmailService:
 
     def send_verification_code(self, to_email, code):
         """Отправка кода верификации"""
-        subject = 'Подтверждение email - XBMC'
+        subject = 'Подтверждение email - Business database'
 
         html_content = f"""
         <!DOCTYPE html>
@@ -104,17 +104,17 @@ class EmailService:
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>XBMC - Подтверждение Email</h1>
+                    <h1>Business database - Подтверждение Email</h1>
                 </div>
                 <div class="content">
                     <p>Здравствуйте!</p>
-                    <p>Для завершения регистрации на платформе XBMC введите этот код подтверждения:</p>
+                    <p>Для завершения регистрации на платформе Business database введите этот код подтверждения:</p>
                     <div class="code">{code}</div>
                     <p><strong>Код действителен в течение 10 минут.</strong></p>
-                    <p>Если вы не регистрировались на XBMC, просто проигнорируйте это письмо.</p>
+                    <p>Если вы не регистрировались на Business database, просто проигнорируйте это письмо.</p>
                 </div>
                 <div class="footer">
-                    <p>С уважением,<br>Команда XBMC</p>
+                    <p>С уважением,<br>Команда Business database</p>
                     <p>Это автоматическое письмо, не отвечайте на него.</p>
                 </div>
             </div>

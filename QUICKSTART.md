@@ -59,7 +59,7 @@ SMTP_PORT=465
 SMTP_USER=info@businessdb.ru
 SMTP_PASSWORD=608sV0i22
 FROM_EMAIL=info@businessdb.ru
-FROM_NAME=XBMC
+FROM_NAME=Business database
 
 # SMS.ru (для верификации телефона)
 SMSRU_API_KEY=20AC889F-40E9-8B3B-1D7A-94042CFC03B5

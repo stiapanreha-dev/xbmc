@@ -95,9 +95,9 @@ class MSSQLConnection:
                 z.id,
                 z.created as date_request,
                 z.purchase_object,
-                z.start_cost,
+                isnull(z.start_cost_var, cast(z.start_cost as varchar(20))) as start_cost,
                 z.customer,
-                z.email,
+                isnull(z.email, z.additional_contacts) as email,
                 z.contact_number as phone,
                 z.post_address as address,
                 z.purchase_type

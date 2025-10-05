@@ -5,12 +5,22 @@
 def mask_email(email, mask_percentage=45):
     """
     Маскирует email на заданный процент (по умолчанию 45%)
+    Если вместо email передан телефон - маскирует как телефон
 
     Примеры:
     test@example.com → te**@ex****e.com
     long.email@domain.com → lon****il@do***n.com
+    +79161234567 → +7916*****67 (автоматически распознает телефон)
     """
-    if not email or '@' not in email:
+    if not email:
+        return email
+
+    # Если это не email (нет @), проверяем, не телефон ли это
+    if '@' not in email:
+        # Проверяем, похоже ли на телефон (содержит в основном цифры)
+        digits = ''.join(c for c in str(email) if c.isdigit())
+        if len(digits) >= 7:  # Минимум 7 цифр для телефона
+            return mask_phone(email)
         return email
 
     local, domain = email.split('@')

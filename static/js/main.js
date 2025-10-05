@@ -31,15 +31,9 @@ function formatPhoneNumber(value) {
     return `+7 (${phoneNumber.slice(1, 4)}) ${phoneNumber.slice(4, 7)}-${phoneNumber.slice(7, 9)}-${phoneNumber.slice(9, 11)}`;
 }
 
-// Auto-hide alerts after 5 seconds
+// Auto-hide alerts disabled - alerts remain visible
 document.addEventListener('DOMContentLoaded', function() {
-    const alerts = document.querySelectorAll('.alert:not(.alert-info)');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }, 5000);
-    });
+    // Auto-hide functionality removed - alerts now stay visible
 
     // Apply phone mask to phone input fields
     const phoneInputs = document.querySelectorAll('input[type="tel"]');
