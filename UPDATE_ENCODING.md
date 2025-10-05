@@ -4,23 +4,44 @@
 Русский текст отображается неправильно (кракозябры вместо кириллицы).
 
 ## Решение
-Добавлен параметр `charset='utf8'` в подключение к MSSQL базе данных.
+1. Добавлен параметр `charset='utf8'` в подключение к MSSQL
+2. Добавлены HTTP заголовки с `charset=utf-8`
+3. Настройка Apache для передачи правильной кодировки
 
-## Как обновить production сервер
+## Полная инструкция
 
-### Вариант 1: Автоматическое обновление через Git
+См. файл **APACHE_CHARSET_FIX.md** - в нем пошаговая инструкция с настройкой Apache.
+
+## Краткая версия для опытных пользователей
+
+### 1. Обновите код через Git
 
 ```cmd
 cd C:\soft\business.db
-
-REM Останавливаем сервис
-nssm stop flask_app
-
-REM Обновляем код
 git pull origin master
+```
 
-REM Запускаем сервис
-nssm start flask_app
+### 2. Настройте Apache
+
+Добавьте в `C:\xampp\apache\conf\extra\httpd-vhosts.conf`:
+
+```apache
+<VirtualHost *:443>
+    ServerName businessdb.ru
+    AddDefaultCharset UTF-8  # <-- Добавьте эту строку
+    ...
+</VirtualHost>
+```
+
+### 3. Перезапустите сервисы
+
+```cmd
+REM Перезапуск Apache
+cd C:\xampp
+apache_stop.bat && apache_start.bat
+
+REM Перезапуск Flask
+nssm restart flask_app
 ```
 
 ### Вариант 2: Ручное обновление (если git недоступен)
