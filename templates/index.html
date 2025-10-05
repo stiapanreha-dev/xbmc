@@ -87,7 +87,7 @@
                         <tr onclick="window.location='{{ url_for('main.zakupki_detail', zakupki_id=item.id) }}'">
                             <td>{{ item.date_request.strftime('%d.%m.%Y') if item.date_request else '' }}</td>
                             <td>{{ item.purchase_object }}</td>
-                            <td>{{ format_price(item.start_cost) if item.start_cost else '' }}</td>
+                            <td>{{ item.start_cost_var if item.start_cost_var else (format_price(item.start_cost) if item.start_cost else '') }}</td>
                             <td>{{ item.customer }}</td>
                             <td>
                                 {% if show_masked_email and item.email %}

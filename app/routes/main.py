@@ -327,10 +327,13 @@ def export_zakupki():
 
     # Данные
     for row in result['data']:
+        # Используем start_cost_var если есть, иначе числовой start_cost
+        price = row.get('start_cost_var') or (str(row['start_cost']) if row.get('start_cost') else '')
+
         ws.append([
             row['date_request'].strftime('%d.%m.%Y') if row['date_request'] else '',
             row['purchase_object'],
-            str(row['start_cost']) if row['start_cost'] else '',
+            price,
             row['customer'],
             row['email'],
             row['phone'],

@@ -40,7 +40,7 @@
                                 </tr>
                                 <tr>
                                     <th>Цена контракта:</th>
-                                    <td><strong class="text-success">{{ format_price(zakupka.start_cost) }}</strong></td>
+                                    <td><strong class="text-success">{{ zakupka.start_cost_var if zakupka.start_cost_var else (format_price(zakupka.start_cost) if zakupka.start_cost else 'Не указана') }}</strong></td>
                                 </tr>
                                 <tr>
                                     <th>ID закупки:</th>
