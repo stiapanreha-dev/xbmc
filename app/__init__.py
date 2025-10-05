@@ -50,4 +50,12 @@ def create_app():
     app.register_blueprint(auth.bp)
     app.register_blueprint(payment.bp)
 
+    # Добавляем middleware для установки правильной кодировки в заголовках
+    @app.after_request
+    def after_request(response):
+        response.headers['Content-Type'] = response.headers.get('Content-Type', 'text/html; charset=utf-8')
+        if 'charset' not in response.headers.get('Content-Type', ''):
+            response.headers['Content-Type'] += '; charset=utf-8'
+        return response
+
     return app
