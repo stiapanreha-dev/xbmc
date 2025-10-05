@@ -41,7 +41,7 @@ cd C:\xampp
 apache_stop.bat && apache_start.bat
 
 REM Перезапуск Flask
-nssm restart flask_app
+nssm restart FlaskBusinessDB
 ```
 
 ### Вариант 2: Ручное обновление (если git недоступен)
@@ -67,7 +67,7 @@ def get_connection(self):
 
 4. Перезапустите службу:
 ```cmd
-nssm restart flask_app
+nssm restart FlaskBusinessDB
 ```
 
 ## Проверка

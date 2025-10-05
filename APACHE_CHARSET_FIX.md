@@ -59,7 +59,7 @@ cd C:\xampp
 .\apache_start.bat
 
 # Перезапуск Flask
-nssm restart flask_app
+nssm restart FlaskBusinessDB
 ```
 
 ## Шаг 4: Очистите кэш браузера
