@@ -17,7 +17,8 @@ class MSSQLConnection:
                 user=self.user,
                 password=self.password,
                 database=self.database,
-                port=self.port
+                port=self.port,
+                charset='utf8'
             )
         except Exception as e:
             print(f"MSSQL Connection Error: {e}")
