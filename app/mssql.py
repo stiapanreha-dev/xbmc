@@ -23,14 +23,19 @@ class MSSQLConnection:
     def get_connection(self):
         try:
             start_time = time.time()
-            conn = pymssql.connect(
-                server=self.server,
-                user=self.user,
-                password=self.password,
-                database=self.database,
-                port=self.port,
-                charset=self.charset
-            )
+            # Для nvarchar (UTF-16) не указываем charset, pymssql сам правильно декодирует
+            conn_params = {
+                'server': self.server,
+                'user': self.user,
+                'password': self.password,
+                'database': self.database,
+                'port': self.port
+            }
+            # Добавляем charset только если он явно задан и не пустой
+            if self.charset:
+                conn_params['charset'] = self.charset
+
+            conn = pymssql.connect(**conn_params)
             self.query_stats['connection_time'] = (time.time() - start_time) * 1000  # в миллисекундах
             return conn
         except Exception as e:
