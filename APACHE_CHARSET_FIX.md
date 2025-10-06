@@ -82,7 +82,7 @@ C:\nssm\win64\nssm.exe restart FlaskBusinessDB
 
 ```sql
 -- Проверить кодировку БД в MSSQL
-SELECT DATABASEPROPERTYEX('buss', 'Collation');
+SELECT DATABASEPROPERTYEX('business', 'Collation');
 ```
 
 Если кодировка базы не UTF-8 и не Cyrillic, данные могут быть повреждены на уровне БД.

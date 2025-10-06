@@ -10,7 +10,7 @@ load_dotenv()
 server = os.getenv('MSSQL_SERVER', '172.26.192.1')
 user = os.getenv('MSSQL_USER', 'sa')
 password = os.getenv('MSSQL_PASSWORD', '123123123')
-database = os.getenv('MSSQL_DATABASE', 'buss')
+database = os.getenv('MSSQL_DATABASE', 'business')
 port = int(os.getenv('MSSQL_PORT', '1433'))
 
 print("Testing different charset options...\n")
