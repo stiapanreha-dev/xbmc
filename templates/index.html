@@ -79,7 +79,7 @@
                 <tbody>
                     {% if zakupki %}
                         {% for item in zakupki %}
-                        <tr onclick="window.location='{{ url_for('main.zakupki_detail', zakupki_id=item.id) }}'">
+                        <tr onclick="window.location='{{ url_for('main.zakupki_detail', zakupki_id=item.id, date_from=date_from, date_to=date_to, search_text=search_text, page=page, per_page=per_page) }}'">
                             <td>{{ item.date_request.strftime('%d.%m.%Y') if item.date_request else '' }}</td>
                             <td>{{ item.purchase_object }}</td>
                             <td>{{ item.start_cost_var if item.start_cost_var else (format_price(item.start_cost) if item.start_cost else '') }}</td>
