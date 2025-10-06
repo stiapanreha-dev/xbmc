@@ -351,3 +351,28 @@ def export_zakupki():
         as_attachment=True,
         download_name=f'zakupki_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
     )
+
+@bp.route('/admin/sql-query', methods=['GET', 'POST'])
+@admin_required
+def admin_sql_query():
+    """Страница для выполнения произвольных SQL запросов (только для админов)"""
+    result = None
+    query = ""
+
+    if request.method == 'POST':
+        query = request.form.get('query', '').strip()
+
+        if not query:
+            flash('Введите SQL запрос', 'warning')
+        else:
+            result = mssql.execute_query(query)
+
+            if result['success']:
+                if result['data']:
+                    flash(f'Запрос выполнен успешно. Получено строк: {result["rowcount"]}. Время: {result["query_time"]} мс', 'success')
+                else:
+                    flash(f'Запрос выполнен успешно. Затронуто строк: {result["rowcount"]}. Время: {result["query_time"]} мс', 'success')
+            else:
+                flash(f'Ошибка выполнения запроса: {result["error"]}', 'danger')
+
+    return render_template('admin_sql_query.html', result=result, query=query)

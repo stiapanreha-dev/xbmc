@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}SQL Запросы - Business database{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">SQL Запросы к MSSQL</h2>
+
+<div class="alert alert-warning">
+    <strong>⚠️ Внимание!</strong> Эта страница позволяет выполнять произвольные SQL запросы к базе данных.
+    Будьте осторожны с командами INSERT, UPDATE, DELETE.
+</div>
+
+<form method="POST" class="mb-4">
+    <div class="mb-3">
+        <label for="query" class="form-label">SQL Запрос:</label>
+        <textarea class="form-control font-monospace" id="query" name="query" rows="8" placeholder="SELECT * FROM zakupki WHERE id = 1">{{ query }}</textarea>
+        <div class="form-text">Поддерживаются SELECT, INSERT, UPDATE, DELETE запросы</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Выполнить запрос</button>
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Назад</a>
+</form>
+
+{% if result %}
+    {% if result.success %}
+        {% if result.data %}
+            <!-- Результаты SELECT запроса -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            {% for column in result.columns %}
+                                <th>{{ column }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in result.data %}
+                            <tr>
+                                {% for column in result.columns %}
+                                    <td>{{ row[column] }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <!-- Результаты INSERT/UPDATE/DELETE запроса -->
+            <div class="alert alert-info">
+                Запрос выполнен успешно. Затронуто строк: {{ result.rowcount }}
+            </div>
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+<style>
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}

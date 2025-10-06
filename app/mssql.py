@@ -177,4 +177,58 @@ class MSSQLConnection:
 
         return results
 
+    def execute_query(self, query):
+        """Выполнить произвольный SQL запрос (только для админов)
+
+        Returns:
+            dict: {'success': bool, 'columns': [...], 'data': [...], 'rowcount': int, 'error': str}
+        """
+        query_start_time = time.time()
+
+        conn = self.get_connection()
+        if conn is None:
+            return {'success': False, 'error': 'Не удалось подключиться к базе данных', 'data': [], 'columns': [], 'rowcount': 0}
+
+        try:
+            cursor = conn.cursor(as_dict=True)
+            cursor.execute(query)
+
+            # Проверяем, есть ли результаты (SELECT запрос)
+            if cursor.description:
+                columns = [desc[0] for desc in cursor.description]
+                results = cursor.fetchall()
+                rowcount = len(results)
+            else:
+                # Для INSERT/UPDATE/DELETE запросов
+                columns = []
+                results = []
+                rowcount = cursor.rowcount
+                conn.commit()
+
+            conn.close()
+
+            # Обновляем статистику
+            query_time = (time.time() - query_start_time) * 1000
+            self.query_stats['total_queries'] += 1
+            self.query_stats['total_time'] += query_time
+            self.query_stats['last_query_time'] = query_time
+
+            return {
+                'success': True,
+                'columns': columns,
+                'data': results,
+                'rowcount': rowcount,
+                'query_time': round(query_time, 2),
+                'error': None
+            }
+        except Exception as e:
+            conn.close()
+            return {
+                'success': False,
+                'error': str(e),
+                'data': [],
+                'columns': [],
+                'rowcount': 0
+            }
+
 mssql = MSSQLConnection()
