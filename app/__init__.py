@@ -52,6 +52,14 @@ def create_app():
     app.register_blueprint(auth.bp)
     app.register_blueprint(payment.bp)
 
+    # Роут для favicon в корне сайта
+    @app.route('/favicon.ico')
+    def favicon():
+        from flask import send_from_directory
+        import os
+        return send_from_directory(os.path.join(app.root_path, '..', 'static'),
+                                    'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
     # Добавляем middleware для установки правильной кодировки в заголовках
     @app.after_request
     def after_request(response):

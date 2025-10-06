@@ -294,6 +294,13 @@ def delete_news(news_id):
 @login_required
 def zakupki_detail(zakupki_id):
     """Показать детальную информацию о закупке"""
+    # Получить параметры фильтрации для возврата к списку
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+    search_text = request.args.get('search_text', '')
+    page = request.args.get('page', '1')
+    per_page = request.args.get('per_page', '20')
+
     # Получить данные закупки
     result = mssql.get_zakupki(limit=1, offset=0, restrict_to_ids=[zakupki_id])
 
@@ -318,7 +325,12 @@ def zakupki_detail(zakupki_id):
                          zakupka=zakupka,
                          specifications=specifications,
                          show_masked_email=show_masked_email,
-                         show_masked_phone=show_masked_phone)
+                         show_masked_phone=show_masked_phone,
+                         date_from=date_from,
+                         date_to=date_to,
+                         search_text=search_text,
+                         page=page,
+                         per_page=per_page)
 
 @bp.route('/zakupki/<int:zakupki_id>/specifications')
 @login_required
