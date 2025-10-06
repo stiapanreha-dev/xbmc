@@ -44,7 +44,7 @@
                                 </tr>
                                 <tr>
                                     <th>ID закупки:</th>
-                                    <td><code>#{{ zakupka.id }}</code></td>
+                                    <td><code class="fs-5">#{{ zakupka.id }}</code></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -57,7 +57,7 @@
                             <tbody>
                                 <tr>
                                     <th style="width: 40%;">Покупатель:</th>
-                                    <td>{{ zakupka.customer or '-' }}</td>
+                                    <td style="word-break: break-word; white-space: normal;">{{ zakupka.customer or '-' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Email:</th>
@@ -91,7 +91,7 @@
                                 </tr>
                                 <tr>
                                     <th>Адрес:</th>
-                                    <td>{{ zakupka.address or '-' }}</td>
+                                    <td style="word-break: break-word; white-space: normal;">{{ zakupka.address or '-' }}</td>
                                 </tr>
                             </tbody>
                         </table>
