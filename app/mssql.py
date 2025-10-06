@@ -79,21 +79,16 @@ class MSSQLConnection:
             params_for_count.append(date_to)
 
         if search_text:
-            # Поиск по zakupki + zakupki_specification
+            # Поиск только по основной таблице zakupki (без specification для производительности)
             search_clause = """(
                 z.purchase_object LIKE %s
                 OR z.customer LIKE %s
-                OR EXISTS (
-                    SELECT 1 FROM zakupki_specification zs
-                    WHERE zs.id_zakupki = z.id
-                    AND (zs.product LIKE %s OR zs.product_specification LIKE %s)
-                )
             )"""
             where_clauses.append(search_clause)
             where_clauses_for_count.append(search_clause)
             search_param = f"%{search_text}%"
-            params.extend([search_param, search_param, search_param, search_param])
-            params_for_count.extend([search_param, search_param, search_param, search_param])
+            params.extend([search_param, search_param])
+            params_for_count.extend([search_param, search_param])
 
         where_sql = ""
         if where_clauses:
