@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from app.models import db, News, Idea, User
 from app.mssql import mssql
 from app.decorators import admin_required
-from datetime import datetime
+from datetime import datetime, timedelta
 import io
 from openpyxl import Workbook
 
@@ -72,6 +72,37 @@ def index():
     # Конвертируем даты
     date_from_obj = datetime.strptime(date_from, '%Y-%m-%d') if date_from else None
     date_to_obj = datetime.strptime(date_to, '%Y-%m-%d') if date_to else None
+
+    # Валидация и ограничение периода поиска
+    MAX_SEARCH_DAYS = 30
+
+    # Если есть поиск по тексту, но не заданы даты - устанавливаем последние 30 дней
+    if search_text and not date_from_obj and not date_to_obj:
+        date_to_obj = datetime.now()
+        date_from_obj = date_to_obj - timedelta(days=MAX_SEARCH_DAYS)
+        date_from = date_from_obj.strftime('%Y-%m-%d')
+        date_to = date_to_obj.strftime('%Y-%m-%d')
+        flash(f'Поиск выполнен за последние {MAX_SEARCH_DAYS} дней. Для изменения периода укажите даты.', 'info')
+
+    # Если задан только один из диапазона дат при поиске - дополняем вторую дату
+    elif search_text:
+        if date_from_obj and not date_to_obj:
+            date_to_obj = date_from_obj + timedelta(days=MAX_SEARCH_DAYS)
+            date_to = date_to_obj.strftime('%Y-%m-%d')
+            flash(f'Период поиска ограничен {MAX_SEARCH_DAYS} днями от указанной даты.', 'info')
+        elif date_to_obj and not date_from_obj:
+            date_from_obj = date_to_obj - timedelta(days=MAX_SEARCH_DAYS)
+            date_from = date_from_obj.strftime('%Y-%m-%d')
+            flash(f'Период поиска ограничен {MAX_SEARCH_DAYS} днями до указанной даты.', 'info')
+
+    # Ограничение интервала поиска (защита от больших интервалов)
+    if search_text and date_from_obj and date_to_obj:
+        days_diff = (date_to_obj - date_from_obj).days
+        if days_diff > MAX_SEARCH_DAYS:
+            # Обрезаем интервал до 30 дней от date_to
+            date_from_obj = date_to_obj - timedelta(days=MAX_SEARCH_DAYS)
+            date_from = date_from_obj.strftime('%Y-%m-%d')
+            flash(f'Интервал поиска ограничен {MAX_SEARCH_DAYS} днями. Период скорректирован.', 'warning')
 
     # Получаем данные из MSSQL
     result = mssql.get_zakupki(
@@ -306,6 +337,28 @@ def export_zakupki():
     # Конвертируем даты
     date_from_obj = datetime.strptime(date_from, '%Y-%m-%d') if date_from else None
     date_to_obj = datetime.strptime(date_to, '%Y-%m-%d') if date_to else None
+
+    # Валидация и ограничение периода поиска (та же логика что и в index)
+    MAX_SEARCH_DAYS = 30
+
+    # Если есть поиск по тексту, но не заданы даты - устанавливаем последние 30 дней
+    if search_text and not date_from_obj and not date_to_obj:
+        date_to_obj = datetime.now()
+        date_from_obj = date_to_obj - timedelta(days=MAX_SEARCH_DAYS)
+
+    # Если задан только один из диапазона дат при поиске - дополняем вторую дату
+    elif search_text:
+        if date_from_obj and not date_to_obj:
+            date_to_obj = date_from_obj + timedelta(days=MAX_SEARCH_DAYS)
+        elif date_to_obj and not date_from_obj:
+            date_from_obj = date_to_obj - timedelta(days=MAX_SEARCH_DAYS)
+
+    # Ограничение интервала поиска (защита от больших интервалов)
+    if search_text and date_from_obj and date_to_obj:
+        days_diff = (date_to_obj - date_from_obj).days
+        if days_diff > MAX_SEARCH_DAYS:
+            # Обрезаем интервал до 30 дней от date_to
+            date_from_obj = date_to_obj - timedelta(days=MAX_SEARCH_DAYS)
 
     # Получаем все данные (без лимита)
     result = mssql.get_zakupki(

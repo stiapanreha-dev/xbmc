@@ -4,12 +4,6 @@
 
 {% block content %}
 
-{% if total == 0 and not zakupki %}
-<div class="alert alert-danger">
-    <strong>Ошибка подключения:</strong> База данных закупок временно недоступна. Пожалуйста, попробуйте позже или обратитесь к администратору.
-</div>
-{% endif %}
-
 {% if not current_user.is_authenticated %}
 <div class="alert alert-warning">
     <strong>Ограниченный доступ:</strong> Отображаются только последние 50 записей.
@@ -25,17 +19,18 @@
 <div class="row mb-4">
     <div class="col-md-12">
         <h4>За период</h4>
-        <form method="GET" action="{{ url_for('main.index') }}" class="row g-3 align-items-end">
+        <form method="GET" action="{{ url_for('main.index') }}" class="row g-3 align-items-end" id="searchForm">
             <input type="hidden" name="per_page" value="{{ per_page }}">
             <div class="col-md-2">
-                <input type="date" class="form-control" name="date_from" value="{{ date_from }}">
+                <input type="date" class="form-control" id="dateFrom" name="date_from" value="{{ date_from }}">
             </div>
             <div class="col-md-2">
-                <input type="date" class="form-control" name="date_to" value="{{ date_to }}">
+                <input type="date" class="form-control" id="dateTo" name="date_to" value="{{ date_to }}">
             </div>
             <div class="col-md-4">
-                <input type="text" class="form-control" name="search_text"
+                <input type="text" class="form-control" id="searchText" name="search_text"
                        placeholder="Товар/услуга" value="{{ search_text }}">
+                <div id="dateWarning" class="form-text text-danger" style="display: none;"></div>
             </div>
             <div class="col-md-1">
                 <button type="submit" class="btn btn-primary w-100">
@@ -258,5 +253,109 @@ function goToPage() {
         window.location.href = url.toString();
     }
 }
+
+// Валидация диапазона дат при поиске
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    const searchText = document.getElementById('searchText');
+    const dateWarning = document.getElementById('dateWarning');
+    const searchForm = document.getElementById('searchForm');
+    const MAX_DAYS = 30;
+
+    function validateDateRange() {
+        // Проверяем только если есть поисковый запрос
+        const hasSearchText = searchText && searchText.value.trim() !== '';
+
+        if (!hasSearchText) {
+            dateWarning.style.display = 'none';
+            return true;
+        }
+
+        const from = dateFrom.value ? new Date(dateFrom.value) : null;
+        const to = dateTo.value ? new Date(dateTo.value) : null;
+
+        // Если обе даты заданы, проверяем интервал
+        if (from && to) {
+            const diffTime = Math.abs(to - from);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > MAX_DAYS) {
+                dateWarning.textContent = `При поиске интервал дат не может превышать ${MAX_DAYS} дней. Период будет скорректирован автоматически.`;
+                dateWarning.style.display = 'block';
+                return true; // Разрешаем отправку, бэкенд скорректирует
+            } else {
+                dateWarning.style.display = 'none';
+            }
+        } else if (!from && !to) {
+            // Если даты не заданы при поиске - показываем предупреждение
+            dateWarning.textContent = `Поиск будет выполнен за последние ${MAX_DAYS} дней.`;
+            dateWarning.style.display = 'block';
+        } else {
+            dateWarning.style.display = 'none';
+        }
+
+        return true;
+    }
+
+    // Автоматическая установка/корректировка второй даты
+    function autoSetDateTo() {
+        if (!dateFrom.value) return;
+
+        const fromDate = new Date(dateFrom.value);
+        const maxToDate = new Date(fromDate);
+        maxToDate.setDate(maxToDate.getDate() + MAX_DAYS);
+
+        // Ограничиваем текущей датой
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const finalToDate = maxToDate > today ? today : maxToDate;
+
+        // Корректируем если:
+        // 1. Поле "Дата до" пустое
+        // 2. "Дата до" превышает "Дата от" + 30 дней
+        // 3. "Дата до" меньше чем "Дата от"
+        const toDate = dateTo.value ? new Date(dateTo.value) : null;
+        const shouldCorrect = !dateTo.value ||
+                             (toDate && toDate > maxToDate) ||
+                             (toDate && toDate < fromDate);
+
+        if (shouldCorrect) {
+            // Форматируем дату в YYYY-MM-DD
+            const year = finalToDate.getFullYear();
+            const month = String(finalToDate.getMonth() + 1).padStart(2, '0');
+            const day = String(finalToDate.getDate()).padStart(2, '0');
+
+            dateTo.value = `${year}-${month}-${day}`;
+        }
+    }
+
+    // Проверка при изменении полей
+    if (dateFrom) {
+        dateFrom.addEventListener('change', function() {
+            autoSetDateTo();
+            validateDateRange();
+        });
+    }
+    if (dateTo) dateTo.addEventListener('change', validateDateRange);
+    if (searchText) {
+        searchText.addEventListener('input', validateDateRange);
+        searchText.addEventListener('change', validateDateRange);
+    }
+
+    // Проверка при отправке формы
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            if (!validateDateRange()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // Проверка при загрузке страницы
+    validateDateRange();
+});
 </script>
 {% endblock %}
