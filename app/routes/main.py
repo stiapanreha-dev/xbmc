@@ -137,8 +137,9 @@ def index():
                          page=page,
                          per_page=per_page)
 
+@login_required
 def companies_index():
-    """Просмотр базы предприятий России"""
+    """Просмотр базы предприятий России (только для авторизованных)"""
     # Получаем параметры фильтрации
     id_rubric = request.args.get('id_rubric', type=int)
     id_subrubric = request.args.get('id_subrubric', type=int)
@@ -160,22 +161,14 @@ def companies_index():
     subrubrics = mssql.get_subrubrics(id_rubric) if id_rubric else []
     cities = mssql.get_cities()
 
-    # Определяем доступ на основе авторизации
-    has_full_access = current_user.is_authenticated and (current_user.has_positive_balance() or current_user.is_admin())
+    # Определяем доступ на основе баланса (пользователь уже авторизован)
+    has_full_access = current_user.has_positive_balance() or current_user.is_admin()
     show_masked_email = not has_full_access
     show_masked_phone = not has_full_access
 
-    # Для неавторизованных - ограничение до 50 записей
-    if not current_user.is_authenticated:
-        max_records = 50
-        offset = (page - 1) * per_page
-        if offset >= max_records:
-            offset = 0
-            page = 1
-        limit = min(per_page, max_records - offset)
-    else:
-        limit = per_page
-        offset = (page - 1) * per_page
+    # Пагинация
+    limit = per_page
+    offset = (page - 1) * per_page
 
     # Получаем данные из MSSQL
     result = mssql.get_companies(

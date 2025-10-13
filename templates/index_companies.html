@@ -4,12 +4,7 @@
 
 {% block content %}
 
-{% if not current_user.is_authenticated %}
-<div class="alert alert-warning">
-    <strong>Ограниченный доступ:</strong> Отображаются только последние 50 записей.
-    <a href="{{ url_for('auth.login') }}" class="alert-link">Войдите</a> для полного доступа.
-</div>
-{% elif show_masked_email or show_masked_phone %}
+{% if show_masked_email or show_masked_phone %}
 <div class="alert alert-info">
     <strong>Обратите внимание:</strong> Email адреса и телефоны частично скрыты.
     <a href="#" class="alert-link" data-bs-toggle="modal" data-bs-target="#balanceModal">Пополните баланс</a> для полного доступа.
