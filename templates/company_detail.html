@@ -109,7 +109,12 @@
                                     <th>Сайт:</th>
                                     <td>
                                         {% if company.site %}
-                                            <a href="http://{{ company.site }}" target="_blank" rel="noopener noreferrer">{{ company.site }}</a>
+                                            {% if show_masked_email %}
+                                                {{ mask_site(company.site) }}
+                                                <small class="text-muted">(частично скрыт)</small>
+                                            {% else %}
+                                                <a href="http://{{ company.site }}" target="_blank" rel="noopener noreferrer">{{ company.site }}</a>
+                                            {% endif %}
                                         {% else %}
                                             -
                                         {% endif %}

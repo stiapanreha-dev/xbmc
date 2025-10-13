@@ -131,7 +131,13 @@ function switchDatabase(dbType) {
                                     {{ item.Email }}
                                 {% endif %}
                             </td>
-                            <td>{{ item.site }}</td>
+                            <td>
+                                {% if show_masked_email and item.site %}
+                                    {{ mask_site(item.site) }}
+                                {% else %}
+                                    {{ item.site }}
+                                {% endif %}
+                            </td>
                             <td>{{ item.inn }}</td>
                             <td>{{ item.director }}</td>
                         </tr>

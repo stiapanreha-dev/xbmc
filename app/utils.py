@@ -68,6 +68,46 @@ def mask_phone(phone, mask_percentage=50):
     return cleaned[:visible_start] + '*' * middle_length + cleaned[-visible_end:]
 
 
+def mask_site(site, mask_percentage=45):
+    """
+    Маскирует сайт на заданный процент (по умолчанию 45%)
+
+    Примеры:
+    example.com → exa***e.com
+    www.site-name.ru → www.sit*****e.ru
+    subdomain.example.com → sub***ain.exa***e.com
+    """
+    if not site:
+        return site
+
+    # Убираем протокол если есть
+    site_clean = site.replace('http://', '').replace('https://', '').strip('/')
+
+    # Разделяем на части по точкам
+    parts = site_clean.split('.')
+
+    if len(parts) < 2:
+        # Если нет точек, просто маскируем часть строки
+        visible = max(3, int(len(site_clean) * (1 - mask_percentage / 100)))
+        return site_clean[:visible] + '*' * (len(site_clean) - visible)
+
+    # Маскируем каждую часть (кроме последней - расширения)
+    masked_parts = []
+    for i, part in enumerate(parts):
+        if i == len(parts) - 1:
+            # Последняя часть (расширение) - показываем первую букву
+            if len(part) > 1:
+                masked_parts.append(part[0] + '*' * (len(part) - 1))
+            else:
+                masked_parts.append(part)
+        else:
+            # Остальные части маскируем
+            visible = max(3, int(len(part) * (1 - mask_percentage / 100)))
+            masked_parts.append(part[:visible] + '*' * (len(part) - visible))
+
+    return '.'.join(masked_parts)
+
+
 def format_price(value):
     """Безопасное форматирование цены"""
     if not value:
