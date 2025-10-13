@@ -76,36 +76,60 @@ def mask_site(site, mask_percentage=45):
     example.com → exa***e.com
     www.site-name.ru → www.sit*****e.ru
     subdomain.example.com → sub***ain.exa***e.com
+    шторыярославль.рф → шторыяр*******.р*
     """
+    # Защита от None, пустых строк и некорректных типов
     if not site:
         return site
 
-    # Убираем протокол если есть
-    site_clean = site.replace('http://', '').replace('https://', '').strip('/')
+    try:
+        # Конвертируем в строку на случай, если передано что-то другое
+        site = str(site).strip()
+        if not site:
+            return site
 
-    # Разделяем на части по точкам
-    parts = site_clean.split('.')
+        # Убираем протокол если есть
+        site_clean = site.replace('http://', '').replace('https://', '').strip('/')
 
-    if len(parts) < 2:
-        # Если нет точек, просто маскируем часть строки
-        visible = max(3, int(len(site_clean) * (1 - mask_percentage / 100)))
-        return site_clean[:visible] + '*' * (len(site_clean) - visible)
+        # Убираем trailing slash и пробелы
+        site_clean = site_clean.rstrip('/').strip()
 
-    # Маскируем каждую часть (кроме последней - расширения)
-    masked_parts = []
-    for i, part in enumerate(parts):
-        if i == len(parts) - 1:
-            # Последняя часть (расширение) - показываем первую букву
-            if len(part) > 1:
-                masked_parts.append(part[0] + '*' * (len(part) - 1))
+        if not site_clean:
+            return site
+
+        # Разделяем на части по точкам
+        parts = site_clean.split('.')
+
+        if len(parts) < 2:
+            # Если нет точек, просто маскируем часть строки
+            visible = max(3, int(len(site_clean) * (1 - mask_percentage / 100)))
+            return site_clean[:visible] + '*' * (len(site_clean) - visible)
+
+        # Маскируем каждую часть (кроме последней - расширения)
+        masked_parts = []
+        for i, part in enumerate(parts):
+            # Пропускаем пустые части
+            if not part:
+                continue
+
+            if i == len(parts) - 1:
+                # Последняя часть (расширение) - показываем первую букву
+                if len(part) > 1:
+                    masked_parts.append(part[0] + '*' * (len(part) - 1))
+                else:
+                    masked_parts.append(part)
             else:
-                masked_parts.append(part)
-        else:
-            # Остальные части маскируем
-            visible = max(3, int(len(part) * (1 - mask_percentage / 100)))
-            masked_parts.append(part[:visible] + '*' * (len(part) - visible))
+                # Остальные части маскируем
+                visible = max(3, int(len(part) * (1 - mask_percentage / 100)))
+                masked_parts.append(part[:visible] + '*' * (len(part) - visible))
 
-    return '.'.join(masked_parts)
+        return '.'.join(masked_parts)
+
+    except Exception as e:
+        # В случае любой ошибки возвращаем исходное значение
+        # Это предотвратит падение страницы
+        print(f"Warning: mask_site error for '{site}': {e}")
+        return site
 
 
 def format_price(value):
