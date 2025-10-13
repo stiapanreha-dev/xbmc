@@ -44,6 +44,25 @@ class MSSQLConnection:
             print(f"MSSQL Connection Error: {e}")
             return None
 
+    def get_connection_cp1251(self):
+        """Отдельное подключение для таблиц с VARCHAR(cp1251) - db_companies, db_rubrics и т.д."""
+        try:
+            start_time = time.time()
+            conn_params = {
+                'server': self.server,
+                'user': self.user,
+                'password': self.password,
+                'database': self.database,
+                'port': self.port,
+                'charset': 'cp1251'  # Явно указываем cp1251 для VARCHAR полей
+            }
+            conn = pymssql.connect(**conn_params)
+            self.query_stats['connection_time'] = (time.time() - start_time) * 1000
+            return conn
+        except Exception as e:
+            print(f"MSSQL Connection Error (cp1251): {e}")
+            return None
+
     def get_zakupki(self, date_from=None, date_to=None, search_text=None, limit=100, offset=0, restrict_to_ids=None, count_all=False):
         """Получить закупки с фильтрацией
 
@@ -235,7 +254,7 @@ class MSSQLConnection:
 
     def get_rubrics(self):
         """Получить список рубрик"""
-        conn = self.get_connection()
+        conn = self.get_connection_cp1251()  # Используем cp1251 для VARCHAR полей
         if conn is None:
             return []
 
@@ -248,7 +267,7 @@ class MSSQLConnection:
 
     def get_subrubrics(self, id_rubric=None):
         """Получить список подрубрик (опционально для конкретной рубрики)"""
-        conn = self.get_connection()
+        conn = self.get_connection_cp1251()  # Используем cp1251 для VARCHAR полей
         if conn is None:
             return []
 
@@ -267,7 +286,7 @@ class MSSQLConnection:
 
     def get_cities(self):
         """Получить список городов"""
-        conn = self.get_connection()
+        conn = self.get_connection_cp1251()  # Используем cp1251 для VARCHAR полей
         if conn is None:
             return []
 
@@ -291,7 +310,7 @@ class MSSQLConnection:
         """
         query_start_time = time.time()
 
-        conn = self.get_connection()
+        conn = self.get_connection_cp1251()  # Используем cp1251 для VARCHAR полей
         if conn is None:
             return {'data': [], 'total': 0}
 
