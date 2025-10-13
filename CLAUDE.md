@@ -94,11 +94,12 @@ EOF
 The application maintains separation between:
 1. **External Data (MSSQL)**: Read-only procurement data accessed via `app/mssql.py`
    - Connection managed by `MSSQLConnection` class
-   - Single method `get_zakupki()` handles all queries with filtering/pagination
+   - Methods: `get_zakupki()`, `get_companies()`, `get_rubrics()`, `get_subrubrics()`, `get_cities()`
    - Configured via `MSSQL_*` environment variables
    - **Character encoding**: Database contains mixed encodings:
      - `zakupki.purchase_object` - **nvarchar** (UTF-16 Unicode)
      - `zakupki_specification.product` - **varchar** (cp1251 via Cyrillic_General collation)
+     - `db_companies`, `db_rubrics`, `db_subrubrics`, `db_cities` - **varchar** (cp1251 via Cyrillic_General_CI_AS collation)
      - **IMPORTANT**: Leave `MSSQL_CHARSET` empty in `.env` to allow pymssql auto-detect encodings
      - Setting explicit charset breaks one of the encodings
    - **Table schema** (`zakupki`):
@@ -109,6 +110,23 @@ The application maintains separation between:
      - `email` (text) - Customer email
      - `phone` (text) - Customer phone
      - `address` (text) - Customer address
+   - **Table schema** (`db_companies`):
+     - `id` (int) - Primary key
+     - `company` (varchar) - Company name
+     - `id_rubric` (int) - FK to db_rubrics
+     - `id_subrubric` (int) - FK to db_subrubrics
+     - `id_city` (int) - FK to db_cities
+     - `phone` (varchar) - Contact phone
+     - `mobile_phone` (varchar) - Mobile phone
+     - `Email` (varchar) - Contact email
+     - `site` (varchar) - Company website
+     - `inn` (varchar) - Tax ID (ИНН)
+     - `director` (varchar) - Director name
+   - **Reference tables**:
+     - `db_rubrics`: id, rubric (varchar) - 30 records
+     - `db_subrubrics`: id, id_rubric, subrubric (varchar) - 1,431 records
+     - `db_cities`: id, city (varchar) - 1,044 records
+   - Total companies: ~5.27 million records
 
 2. **Local Data (SQLite)**: User accounts and application data via SQLAlchemy ORM
    - Models defined in `app/models.py`: User, Transaction, News, Idea, EmailVerification
