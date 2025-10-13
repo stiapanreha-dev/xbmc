@@ -23,7 +23,13 @@ def mask_email(email, mask_percentage=45):
             return mask_phone(email)
         return email
 
-    local, domain = email.split('@')
+    # Разделяем email на локальную часть и домен
+    # Используем rsplit с maxsplit=1 для обработки случаев с несколькими @
+    parts = email.rsplit('@', 1)
+    if len(parts) != 2:
+        # Некорректный email, возвращаем как есть
+        return email
+    local, domain = parts
     domain_name, domain_ext = domain.rsplit('.', 1) if '.' in domain else (domain, '')
 
     # Маскируем локальную часть
