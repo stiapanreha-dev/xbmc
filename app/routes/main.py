@@ -11,7 +11,14 @@ bp = Blueprint('main', __name__)
 
 @bp.route('/')
 def index():
-    # Получаем параметры фильтрации
+    # Получаем параметр выбора базы данных
+    db_type = request.args.get('db_type', 'zakupki')  # zakupki | companies
+
+    # Если выбрана база предприятий, переходим на отдельный роут
+    if db_type == 'companies':
+        return companies_index()
+
+    # Получаем параметры фильтрации для закупок
     date_from = request.args.get('date_from')
     date_to = request.args.get('date_to')
     search_text = request.args.get('search_text', '').strip()
@@ -118,10 +125,79 @@ def index():
     total = result['total']
 
     return render_template('index.html',
+                         db_type='zakupki',
                          zakupki=result['data'],
                          total=total,
                          date_from=date_from or '',
                          date_to=date_to or '',
+                         search_text=search_text,
+                         has_full_access=has_full_access,
+                         show_masked_email=show_masked_email,
+                         show_masked_phone=show_masked_phone,
+                         page=page,
+                         per_page=per_page)
+
+def companies_index():
+    """Просмотр базы предприятий России"""
+    # Получаем параметры фильтрации
+    id_rubric = request.args.get('id_rubric', type=int)
+    id_subrubric = request.args.get('id_subrubric', type=int)
+    id_city = request.args.get('id_city', type=int)
+    search_text = request.args.get('search_text', '').strip()
+    page = int(request.args.get('page', 1))
+
+    # Получаем параметр per_page с валидацией
+    per_page_param = request.args.get('per_page', '20')
+    try:
+        per_page = int(per_page_param)
+        if per_page not in [20, 50, 100, 500]:
+            per_page = 20
+    except ValueError:
+        per_page = 20
+
+    # Получаем списки для фильтров
+    rubrics = mssql.get_rubrics()
+    subrubrics = mssql.get_subrubrics(id_rubric) if id_rubric else []
+    cities = mssql.get_cities()
+
+    # Определяем доступ на основе авторизации
+    has_full_access = current_user.is_authenticated and (current_user.has_positive_balance() or current_user.is_admin())
+    show_masked_email = not has_full_access
+    show_masked_phone = not has_full_access
+
+    # Для неавторизованных - ограничение до 50 записей
+    if not current_user.is_authenticated:
+        max_records = 50
+        offset = (page - 1) * per_page
+        if offset >= max_records:
+            offset = 0
+            page = 1
+        limit = min(per_page, max_records - offset)
+    else:
+        limit = per_page
+        offset = (page - 1) * per_page
+
+    # Получаем данные из MSSQL
+    result = mssql.get_companies(
+        id_rubric=id_rubric,
+        id_subrubric=id_subrubric,
+        id_city=id_city,
+        search_text=search_text if search_text else None,
+        limit=limit,
+        offset=offset
+    )
+
+    total = result['total']
+
+    return render_template('index_companies.html',
+                         companies=result['data'],
+                         total=total,
+                         rubrics=rubrics,
+                         subrubrics=subrubrics,
+                         cities=cities,
+                         id_rubric=id_rubric,
+                         id_subrubric=id_subrubric,
+                         id_city=id_city,
                          search_text=search_text,
                          has_full_access=has_full_access,
                          show_masked_email=show_masked_email,

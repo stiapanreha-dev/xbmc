@@ -16,6 +16,23 @@
 </div>
 {% endif %}
 
+<!-- Переключатель баз данных -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <label for="dbTypeSelect" class="form-label fw-bold fs-5">Выберите базу данных:</label>
+        <select class="form-select form-select-lg" id="dbTypeSelect" onchange="switchDatabase(this.value)" style="border: 2px solid #0d6efd; font-weight: 500;">
+            <option value="zakupki" selected>1. Закупки</option>
+            <option value="companies">2. Предприятия России</option>
+        </select>
+    </div>
+</div>
+
+<script>
+function switchDatabase(dbType) {
+    window.location.href = '{{ url_for("main.index") }}?db_type=' + dbType;
+}
+</script>
+
 <div class="row mb-4">
     <div class="col-md-12">
         <h4>За период</h4>

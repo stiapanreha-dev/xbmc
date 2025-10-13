@@ -16,17 +16,15 @@
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="email" name="email" required>
-                        <div class="form-text">На этот email будет отправлен код подтверждения</div>
+                        <div class="form-text">На этот email будет отправлен код подтверждения и сгенерированный пароль</div>
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Телефон <span class="text-muted">(необязательно)</span></label>
                         <input type="tel" class="form-control" id="phone" name="phone" placeholder="+7 (___) ___-__-__">
                         <div class="form-text">Необязательное поле</div>
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Пароль</label>
-                        <input type="password" class="form-control" id="password" name="password" required minlength="6">
-                        <div class="form-text">Минимум 6 символов</div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Пароль будет автоматически сгенерирован и отправлен вам на email
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>
                 </form>

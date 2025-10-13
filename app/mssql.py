@@ -231,4 +231,143 @@ class MSSQLConnection:
                 'rowcount': 0
             }
 
+    def get_rubrics(self):
+        """Получить список рубрик"""
+        conn = self.get_connection()
+        if conn is None:
+            return []
+
+        cursor = conn.cursor(as_dict=True)
+        query = "SELECT id, rubric FROM db_rubrics ORDER BY rubric"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        conn.close()
+        return results
+
+    def get_subrubrics(self, id_rubric=None):
+        """Получить список подрубрик (опционально для конкретной рубрики)"""
+        conn = self.get_connection()
+        if conn is None:
+            return []
+
+        cursor = conn.cursor(as_dict=True)
+
+        if id_rubric:
+            query = "SELECT id, id_rubric, subrubric FROM db_subrubrics WHERE id_rubric = %s ORDER BY subrubric"
+            cursor.execute(query, (id_rubric,))
+        else:
+            query = "SELECT id, id_rubric, subrubric FROM db_subrubrics ORDER BY subrubric"
+            cursor.execute(query)
+
+        results = cursor.fetchall()
+        conn.close()
+        return results
+
+    def get_cities(self):
+        """Получить список городов"""
+        conn = self.get_connection()
+        if conn is None:
+            return []
+
+        cursor = conn.cursor(as_dict=True)
+        query = "SELECT id, city FROM db_cities ORDER BY city"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        conn.close()
+        return results
+
+    def get_companies(self, id_rubric=None, id_subrubric=None, id_city=None, search_text=None, limit=100, offset=0):
+        """Получить предприятия с фильтрацией
+
+        Args:
+            id_rubric: ID рубрики
+            id_subrubric: ID подрубрики
+            id_city: ID города
+            search_text: Текст для поиска (по названию компании, ИНН, директору)
+            limit: Количество записей на странице
+            offset: Смещение для пагинации
+        """
+        query_start_time = time.time()
+
+        conn = self.get_connection()
+        if conn is None:
+            return {'data': [], 'total': 0}
+
+        cursor = conn.cursor(as_dict=True)
+
+        where_clauses = []
+        params = []
+
+        if id_rubric:
+            where_clauses.append("c.id_rubric = %s")
+            params.append(id_rubric)
+
+        if id_subrubric:
+            where_clauses.append("c.id_subrubric = %s")
+            params.append(id_subrubric)
+
+        if id_city:
+            where_clauses.append("c.id_city = %s")
+            params.append(id_city)
+
+        if search_text:
+            search_clause = """(
+                c.company LIKE %s
+                OR c.inn LIKE %s
+                OR c.director LIKE %s
+            )"""
+            where_clauses.append(search_clause)
+            search_param = f"%{search_text}%"
+            params.extend([search_param, search_param, search_param])
+
+        where_sql = ""
+        if where_clauses:
+            where_sql = "WHERE " + " AND ".join(where_clauses)
+
+        # Получаем общее количество записей
+        count_query = f"SELECT COUNT(*) as total FROM db_companies c {where_sql}"
+        cursor.execute(count_query, tuple(params))
+        total = cursor.fetchone()['total']
+
+        # Получаем записи с пагинацией
+        query = f"""
+            SELECT
+                c.id,
+                c.company,
+                c.phone,
+                c.mobile_phone,
+                c.Email,
+                c.site,
+                c.inn,
+                c.ogrn,
+                c.director,
+                r.rubric,
+                sr.subrubric,
+                ct.city
+            FROM db_companies c
+            LEFT JOIN db_rubrics r ON c.id_rubric = r.id
+            LEFT JOIN db_subrubrics sr ON c.id_subrubric = sr.id
+            LEFT JOIN db_cities ct ON c.id_city = ct.id
+            {where_sql}
+            ORDER BY c.id DESC
+            OFFSET %s ROWS
+            FETCH NEXT %s ROWS ONLY
+        """
+
+        cursor.execute(query, tuple(params + [offset, limit]))
+        results = cursor.fetchall()
+
+        conn.close()
+
+        # Обновляем статистику профилирования
+        query_time = (time.time() - query_start_time) * 1000  # в миллисекундах
+        self.query_stats['total_queries'] += 1
+        self.query_stats['total_time'] += query_time
+        self.query_stats['last_query_time'] = query_time
+
+        return {
+            'data': results,
+            'total': total
+        }
+
 mssql = MSSQLConnection()

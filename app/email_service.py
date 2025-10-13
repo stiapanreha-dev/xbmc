@@ -124,10 +124,154 @@ class EmailService:
 
         return self.send_email(to_email, subject, html_content)
 
+    def send_password_email(self, to_email, username, password):
+        """Отправка пароля после регистрации"""
+        subject = 'Спасибо за регистрацию - Business database'
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body {{
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #212529;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f8f9fa;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 40px auto;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }}
+                .header {{
+                    background-color: #0d6efd;
+                    padding: 30px 20px;
+                    text-align: center;
+                }}
+                .logo {{
+                    max-width: 200px;
+                    height: auto;
+                }}
+                .content {{
+                    padding: 40px 30px;
+                }}
+                .greeting {{
+                    font-size: 24px;
+                    font-weight: 600;
+                    color: #212529;
+                    margin-bottom: 20px;
+                }}
+                .message {{
+                    font-size: 16px;
+                    color: #495057;
+                    margin-bottom: 30px;
+                }}
+                .credentials {{
+                    background-color: #f8f9fa;
+                    border-left: 4px solid #0d6efd;
+                    padding: 20px;
+                    margin: 30px 0;
+                }}
+                .credentials-label {{
+                    font-size: 14px;
+                    color: #6c757d;
+                    margin-bottom: 5px;
+                }}
+                .credentials-value {{
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #0d6efd;
+                    font-family: 'Courier New', monospace;
+                    word-break: break-all;
+                }}
+                .footer {{
+                    text-align: center;
+                    padding: 30px;
+                    background-color: #f8f9fa;
+                    color: #6c757d;
+                    font-size: 14px;
+                }}
+                .btn {{
+                    display: inline-block;
+                    padding: 12px 30px;
+                    background-color: #0d6efd;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    font-weight: 500;
+                    margin: 20px 0;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <img src="https://businessdb.ru/static/images/logo.png" alt="Business database" class="logo">
+                </div>
+                <div class="content">
+                    <div class="greeting">Спасибо за регистрацию!</div>
+                    <div class="message">
+                        Здравствуйте, <strong>{username}</strong>!<br>
+                        Ваш аккаунт в Business database успешно создан.
+                    </div>
+                    <div class="credentials">
+                        <div class="credentials-label">Ваш логин:</div>
+                        <div class="credentials-value">{username}</div>
+                    </div>
+                    <div class="credentials">
+                        <div class="credentials-label">Ваш пароль:</div>
+                        <div class="credentials-value">{password}</div>
+                    </div>
+                    <div class="message">
+                        Используйте эти данные для входа в систему.<br>
+                        Рекомендуем изменить пароль после первого входа в настройках профиля.
+                    </div>
+                    <center>
+                        <a href="https://businessdb.ru/auth/login" class="btn">Войти в систему</a>
+                    </center>
+                </div>
+                <div class="footer">
+                    <p>С уважением,<br>Команда Business database</p>
+                    <p>Это автоматическое письмо, не отвечайте на него.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        return self.send_email(to_email, subject, html_content)
+
     @staticmethod
     def generate_verification_code(length=6):
         """Генерация числового кода верификации"""
         return ''.join([str(secrets.randbelow(10)) for _ in range(length)])
+
+    @staticmethod
+    def generate_password(length=12):
+        """Генерация сильного пароля"""
+        import string
+        # Используем буквы, цифры и специальные символы
+        chars = string.ascii_letters + string.digits + '!@#$%^&*'
+        # Гарантируем наличие разных типов символов
+        password = [
+            secrets.choice(string.ascii_uppercase),
+            secrets.choice(string.ascii_lowercase),
+            secrets.choice(string.digits),
+            secrets.choice('!@#$%^&*')
+        ]
+        # Добавляем остальные случайные символы
+        for _ in range(length - 4):
+            password.append(secrets.choice(chars))
+        # Перемешиваем
+        secrets.SystemRandom().shuffle(password)
+        return ''.join(password)
 
 
 # Singleton instance

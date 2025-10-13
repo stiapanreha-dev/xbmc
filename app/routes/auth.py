@@ -13,15 +13,9 @@ def register():
         username = request.form.get('username')
         email = request.form.get('email')
         phone = request.form.get('phone', '').strip()  # Телефон опционален
-        password = request.form.get('password')
 
-        if not username or not email or not password:
-            flash('Заполните обязательные поля (имя, email, пароль)', 'danger')
-            return redirect(url_for('auth.register'))
-
-        # Проверка длины пароля
-        if len(password) < 6:
-            flash('Пароль должен содержать минимум 6 символов', 'danger')
+        if not username or not email:
+            flash('Заполните обязательные поля (имя и email)', 'danger')
             return redirect(url_for('auth.register'))
 
         if User.query.filter_by(username=username).first():
@@ -31,6 +25,9 @@ def register():
         if User.query.filter_by(email=email).first():
             flash('Email уже зарегистрирован', 'danger')
             return redirect(url_for('auth.register'))
+
+        # Генерируем сильный пароль
+        password = email_service.generate_password()
 
         # Создаем пользователя (неверифицированный)
         user = User(username=username, email=email, phone=phone)
@@ -51,11 +48,14 @@ def register():
         db.session.add(verification)
         db.session.commit()  # Сохраняем все вместе
 
-        # Отправляем email с кодом
-        if email_service.send_verification_code(email, code):
+        # Отправляем email с кодом и паролем
+        verification_sent = email_service.send_verification_code(email, code)
+        password_sent = email_service.send_password_email(email, username, password)
+
+        if verification_sent and password_sent:
             # Сохраняем user_id в сессии для подтверждения
             session['pending_user_id'] = user.id
-            flash('Регистрация успешна! Проверьте email для подтверждения.', 'success')
+            flash('Регистрация успешна! Проверьте email - мы отправили вам код подтверждения и пароль для входа.', 'success')
             return redirect(url_for('auth.verify_email'))
         else:
             flash('Ошибка отправки email. Попробуйте позже.', 'danger')
