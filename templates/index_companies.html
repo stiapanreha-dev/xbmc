@@ -112,7 +112,7 @@ function switchDatabase(dbType) {
                 <tbody>
                     {% if companies %}
                         {% for item in companies %}
-                        <tr>
+                        <tr onclick="window.location='{{ url_for('main.company_detail', company_id=item.id, id_rubric=id_rubric, id_subrubric=id_subrubric, id_city=id_city, search_text=search_text, page=page, per_page=per_page) }}';" style="cursor: pointer;">
                             <td>{{ item.company }}</td>
                             <td>{{ item.rubric }}</td>
                             <td>{{ item.subrubric }}</td>

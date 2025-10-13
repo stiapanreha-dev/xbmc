@@ -418,6 +418,72 @@ def specifications(zakupki_id):
     """Показать спецификации для закупки (старый роут, редирект на новый)"""
     return redirect(url_for('main.zakupki_detail', zakupki_id=zakupki_id))
 
+@bp.route('/companies/<int:company_id>')
+@login_required
+def company_detail(company_id):
+    """Показать детальную информацию о компании"""
+    # Получить параметры фильтрации для возврата к списку
+    id_rubric = request.args.get('id_rubric', type=int)
+    id_subrubric = request.args.get('id_subrubric', type=int)
+    id_city = request.args.get('id_city', type=int)
+    search_text = request.args.get('search_text', '')
+    page = request.args.get('page', '1')
+    per_page = request.args.get('per_page', '20')
+
+    # Получить данные компании по ID
+    conn = mssql.get_connection_cp1251()
+    if conn is None:
+        flash('Ошибка подключения к базе данных', 'error')
+        return redirect(url_for('main.index', db_type='companies'))
+
+    cursor = conn.cursor(as_dict=True)
+    query = """
+        SELECT
+            c.id,
+            c.company,
+            c.phone,
+            c.mobile_phone,
+            c.Email,
+            c.site,
+            c.inn,
+            c.ogrn,
+            c.director,
+            r.rubric,
+            sr.subrubric,
+            ct.city
+        FROM db_companies c
+        LEFT JOIN db_rubrics r ON c.id_rubric = r.id
+        LEFT JOIN db_subrubrics sr ON c.id_subrubric = sr.id
+        LEFT JOIN db_cities ct ON c.id_city = ct.id
+        WHERE c.id = %s
+    """
+    cursor.execute(query, (company_id,))
+    company = cursor.fetchone()
+    conn.close()
+
+    if not company:
+        flash('Компания не найдена', 'error')
+        return redirect(url_for('main.index', db_type='companies'))
+
+    # Определить нужно ли маскировать данные
+    show_masked_email = False
+    show_masked_phone = False
+
+    if not (current_user.has_positive_balance() or current_user.is_admin()):
+        show_masked_email = True
+        show_masked_phone = True
+
+    return render_template('company_detail.html',
+                         company=company,
+                         show_masked_email=show_masked_email,
+                         show_masked_phone=show_masked_phone,
+                         id_rubric=id_rubric,
+                         id_subrubric=id_subrubric,
+                         id_city=id_city,
+                         search_text=search_text,
+                         page=page,
+                         per_page=per_page)
+
 @bp.route('/export')
 @login_required
 def export_zakupki():

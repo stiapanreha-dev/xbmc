@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company.company[:50] }} - Business database{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <a href="{{ url_for('main.index', db_type='companies', id_rubric=id_rubric, id_subrubric=id_subrubric, id_city=id_city, search_text=search_text, page=page, per_page=per_page) }}" class="btn btn-outline-secondary btn-sm">
+            <svg width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            Назад к списку
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Информация о предприятии</h4>
+            </div>
+            <div class="card-body">
+                <!-- Название компании -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h5>Название предприятия</h5>
+                        <p class="lead">{{ company.company }}</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Левая колонка -->
+                    <div class="col-md-6">
+                        <h6>Основная информация</h6>
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 40%;">Рубрика:</th>
+                                    <td>{{ company.rubric or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Подрубрика:</th>
+                                    <td>{{ company.subrubric or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Город:</th>
+                                    <td>{{ company.city or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Директор:</th>
+                                    <td>{{ company.director or '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Правая колонка -->
+                    <div class="col-md-6">
+                        <h6>Контактная информация</h6>
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 40%;">Телефон:</th>
+                                    <td>
+                                        {% if company.phone %}
+                                            {% if show_masked_phone %}
+                                                {{ mask_phone(company.phone) }}
+                                                <small class="text-muted">(частично скрыт)</small>
+                                            {% else %}
+                                                <a href="tel:{{ company.phone }}">{{ company.phone }}</a>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Мобильный:</th>
+                                    <td>
+                                        {% if company.mobile_phone %}
+                                            {% if show_masked_phone %}
+                                                {{ mask_phone(company.mobile_phone) }}
+                                                <small class="text-muted">(частично скрыт)</small>
+                                            {% else %}
+                                                <a href="tel:{{ company.mobile_phone }}">{{ company.mobile_phone }}</a>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>
+                                        {% if company.Email %}
+                                            {% if show_masked_email %}
+                                                {{ mask_email(company.Email) }}
+                                                <small class="text-muted">(частично скрыт)</small>
+                                            {% else %}
+                                                <a href="mailto:{{ company.Email }}">{{ company.Email }}</a>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Сайт:</th>
+                                    <td>
+                                        {% if company.site %}
+                                            <a href="http://{{ company.site }}" target="_blank" rel="noopener noreferrer">{{ company.site }}</a>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Реквизиты -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h6>Реквизиты</h6>
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 20%;">ИНН:</th>
+                                    <td><code>{{ company.inn or '-' }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>ОГРН:</th>
+                                    <td><code>{{ company.ogrn or '-' }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>ID компании:</th>
+                                    <td><code class="fs-5">#{{ company.id }}</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Предупреждение для неавторизованных -->
+                {% if show_masked_email or show_masked_phone %}
+                <div class="alert alert-info mt-3">
+                    <strong>Обратите внимание:</strong> Контактные данные частично скрыты.
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.login') }}" class="alert-link">Войдите</a> и
+                    {% endif %}
+                    <a href="#" class="alert-link" data-bs-toggle="modal" data-bs-target="#balanceModal">пополните баланс</a> для полного доступа.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Дополнительные действия -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('main.index', db_type='companies', id_rubric=id_rubric, id_subrubric=id_subrubric, id_city=id_city, search_text=search_text, page=page, per_page=per_page) }}" class="btn btn-secondary">
+                Вернуться к списку
+            </a>
+            {% if current_user.is_authenticated %}
+            <button class="btn btn-outline-primary" onclick="window.print()">
+                <svg width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                    <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                    <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                </svg>
+                Печать
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .btn, nav, footer, .alert {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
