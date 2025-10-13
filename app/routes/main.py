@@ -203,6 +203,10 @@ def privacy_policy():
 def terms_of_service():
     return render_template('terms_of_service.html')
 
+@bp.route('/contacts')
+def contacts():
+    return render_template('contacts.html')
+
 @bp.route('/offer')
 def offer():
     return render_template('offer.html')

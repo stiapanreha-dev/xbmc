@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты - Business database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Контакты</h2>
+        <p class="text-muted">
+
+       <!-- Contact :: Start-->
+	<div class="contact">
+	
+		<div class="row">
+		
+		<div class="col-xl-12">
+			<div class="contacts">
+				 
+				<div class="contacts__map" id="contacts__map"></div>
+								<div class="contacts__wrapper">
+					<div class="container-fluid">
+						<div class="contacts__data">
+							<div class="row">
+								<div class="col-xl">
+									<div class="row">
+										<div class="col-lg-4">
+											<div class="contacts__data-group">
+												<span class="h2 contacts__data-title">Основной магазин</span>
+																								<dl class="contacts__data-dl">
+													 
+													<dt>Телефон</dt>
+													<dd>
+														<ul class="contacts__data-phones">
+																														<li>
+																<a rel="nofollow" href="tel:+79213771213">+7 (921) 377-12-13</a>
+															</li>
+																																												</ul>
+																												<p class="contacts__data-worktime">24h</p>
+																											</dd>
+																																							<dt>Электронная почта</dt>
+													<dd>
+														<ul class="contacts__data-emails">
+															<li>
+																<a href="mailto:info@businessdb.ru">info@businessdb.ru</a>
+															</li>
+														</ul>
+													</dd>
+																										 
+													<dt>Адрес магазина</dt>
+													<dd>
+														<address class="contacts__data-address">
+																																													<svg class="icon-location"><use xlink:href="catalog/view/theme/prostore/sprites/sprite.svg#icon-location"></use>
+																</svg>
+																<a href="https://yandex.ru/maps/?pt=%2030.413075%2C59.969871&z=17&l=map" target="_blank">195176, г.Санкт-Петербург,<br />
+Пискаревский пр-кт, д.25, лит.А, пом.17-Н</a>
+																																											</address>
+													</dd>
+																									</dl>
+											</div>
+										</div>
+										 
+										<div class="col-lg-8">
+											<div class="contacts__data-group">
+												<span class="h2 contacts__data-title">Наши реквизиты</span>
+												<p class="contacts__data-text">Банковские и юридические реквизиты</p>
+												<div class="contacts__data-requisites">
+													<div class="row">
+																												<div class="col-md-4">
+															<dl>
+																																<dt></dt>
+																<dd></dd>
+																																<dt>Самозанятый</dt>
+																<dd>Толстенева Александра Владимировна</dd>
+																															</dl>
+														</div>
+																												<div class="col-md-4">
+															<dl>
+																																<dt>ИНН</dt>
+																<dd>780419444237</dd>
+																																<dt>Фактический адрес</dt>
+																<dd>195176, г.Санкт-Петербург,
+Пискаревский пр-кт, д.25, лит.А, пом.17-Н</dd>
+																															</dl>
+														</div>
+																												<div class="col-md-4">
+															<dl>
+																																<dt>Телефон</dt>
+																<dd>8 921 377 12 13</dd>
+																															</dl>
+														</div>
+																											</div>
+												</div>
+											</div>
+										</div>
+																			</div>
+								</div>
+							</div>
+						</div>
+											</div>
+				</div>
+			</div>
+		</div>
+		
+		</div>
+
+	
+	</div>
+	<!-- Contact :: End-->
+
+
+    </div>
+</div>
+{% endblock %}

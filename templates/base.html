@@ -12,8 +12,24 @@
 
     <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="yandex-verification" content="c326a374924bae98" />
 </head>
 <body>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=104591444', 'ym');
+
+    ym(104591444, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/104591444" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
@@ -124,11 +140,11 @@
             <div class="row">
                 <div class="col-md-12 text-center">
                     <p class="mb-2">
-                        <a href="{{ url_for('main.privacy_policy') }}" class="text-decoration-none me-3">Политика конфиденциальности</a>
+                        <a href="{{ url_for('main.privacy_policy') }}" class="text-decoration-none me-3">Согласие на обработку персональных данных</a>
                         <a href="{{ url_for('main.terms_of_service') }}" class="text-decoration-none me-3">Пользовательское соглашение</a>
                         <a href="{{ url_for('main.offer') }}" class="text-decoration-none">Публичная оферта</a>
                     </p>
-                    <p class="text-muted mb-0">&copy; 2024 Business database. Все права защищены.</p>
+                    <p class="text-muted mb-0">&copy; 2025 Business database. Все права защищены.</p>
                 </div>
             </div>
         </div>
