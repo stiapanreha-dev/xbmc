@@ -10,7 +10,9 @@ class MSSQLConnection:
         self.password = os.getenv('MSSQL_PASSWORD', '123123123')
         self.database = os.getenv('MSSQL_DATABASE', 'buss')
         self.port = int(os.getenv('MSSQL_PORT', '1433'))
-        self.charset = os.getenv('MSSQL_CHARSET', 'utf8')
+        # Пустой charset по умолчанию - pymssql автоматически определит кодировку
+        # для каждого типа поля (nvarchar=UTF-16, varchar=cp1251 по collation)
+        self.charset = os.getenv('MSSQL_CHARSET', '')
 
         # Профилирование запросов (для админов)
         self.query_stats = {
